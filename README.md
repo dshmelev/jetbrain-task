@@ -60,7 +60,7 @@ To remove a Dev namespace after testing:
 kubectl delete namespace dev-<branch>
 ```
 
-
+```
 Project/
 ├── .github/
 │   └── workflows/
@@ -75,3 +75,4 @@ Project/
 │   └── values-stage.yaml
 ├── Dockerfile
 └── README.md
+```
