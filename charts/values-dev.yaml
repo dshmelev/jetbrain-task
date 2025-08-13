@@ -25,10 +25,6 @@ service:
   port: 80
   name: my-service-dev
 
-configmap:
-  enabled: false
-  data: {}
-
 ingress:
   enabled: false
   hosts: []
