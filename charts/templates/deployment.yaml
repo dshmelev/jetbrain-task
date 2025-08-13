@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ .Values.fullnameOverride }}
+  name: {{ .Values.name }}
   labels:
     {{- include "my-python-app.labels" . | nindent 4 }}
 spec:
