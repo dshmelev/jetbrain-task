@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "my-app.fullname" . }}
+  name: {{ include "my-python-app.fullname" . }}
   labels:
     {{- include "my-python-app.labels" . | nindent 4 }}
 spec:
@@ -15,9 +15,9 @@ spec:
     metadata:
       {{- with .Values.podAnnotations }}
       annotations:
-        checksum/config: { { include (print $.Template.BasePath "/configmap.yaml") . | sha256sum } }
-        checksum/secret: { { include (print $.Template.BasePath "/secret.yaml") . | sha256sum } }
-        checksum/secret-newrelic: { { include (print $.Template.BasePath "/secret-newrelic.yaml") . | sha256sum } }
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+        checksum/secret: {{ include (print $.Template.BasePath "/secret.yaml") . | sha256sum }}
+        checksum/secret-newrelic: {{ include (print $.Template.BasePath "/secret-newrelic.yaml") . | sha256sum }}
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:
