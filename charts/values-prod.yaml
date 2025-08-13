@@ -1,0 +1,28 @@
+
+replicaCount: 4
+
+
+service:
+  type: ClusterIP
+  port: 80
+
+
+
+resources:
+   limits:
+     cpu: 200m
+     memory: 128Mi
+   requests:
+     cpu: 100m
+     memory: 128Mi
+
+livenessProbe:
+  httpGet:
+    path: /
+    port: http
+readinessProbe:
+  httpGet:
+    path: /
+    port: http
+
+
