@@ -71,7 +71,7 @@ jobs:
      - name: Run Trivy vulnerability scanner
        uses: aquasecurity/trivy-action@0.29.0
        with:
-             image-ref: ghcr.io/${{ github.repository_owner }}/jetbrain-task:${{ github.sha }}
+             image-ref: ${{env.REGISTRY}}:${{ github.sha }}
              format: 'table'
              ignore-unfixed: true #if find high and critical issue exists pipeline will be stopped
              vuln-type: 'os,library'
