@@ -77,7 +77,9 @@ jobs:
              vuln-type: 'os,library'
              severity: 'CRITICAL,HIGH'
              cache: 'true'
+             skip-db-update: 'true'
              output: trivy.txt
+
 
      - name: Publish Trivy Output to Summary
        run: |
