@@ -11,7 +11,7 @@ permissions: #This gives the repo’s GITHUB_TOKEN the rights to push to GHCR fr
   contents: read
   packages: write
 env:
-  REGISTRY: ghcr.io
+  REGISTRY: ghcr.io/mina-farajian/jetbrain-task
   IMAGE_NAME: ${{ github.repository }}
 
 jobs:
@@ -65,8 +65,8 @@ jobs:
           push: true
           platforms: linux/amd64
           tags: |
-            ghcr.io/mina-farajian/jetbrain-task:dev-${{ steps.branch.outputs.safe }}-${{ github.sha }} 
-            ghcr.io/mina-farajian/jetbrain-taskk:${{ github.sha }} 
+            ${{env.REGISTRY}}:dev-${{ steps.branch.outputs.safe }}-${{ github.sha }} 
+            ${{env.REGISTRY}}:${{ github.sha }} 
 
      - name: Run Trivy vulnerability scanner
        uses: aquasecurity/trivy-action@0.29.0
@@ -113,12 +113,12 @@ jobs:
            run: |
              IMAGE_TAG=dev-${{ steps.branch.outputs.safe }}-${{ github.sha }}
              NAMESPACE=dev-${{ needs.build-and-push.outputs.safe_branch }} 
-             echo "Deploying image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${IMAGE_TAG} to namespace $NAMESPACE
+             echo "Deploying image: ${{env.REGISTRY}}}/${{ env.IMAGE_NAME }}:${IMAGE_TAG} to namespace $NAMESPACE
              
              helm template my-app ./charts \
                --namespace $NAMESPACE \
                --create-namespace \
-               --set image.repository=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }} \
+               --set image.repository=${{env.REGISTRY}}/${{ env.IMAGE_NAME }} \
                --set image.tag=${IMAGE_TAG} \
                -f charts/values-dev.yaml
 
