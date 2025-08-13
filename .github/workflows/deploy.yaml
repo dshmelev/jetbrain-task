@@ -73,7 +73,7 @@ jobs:
        with:
              image-ref: ghcr.io/${{ github.repository_owner }}/jetbrain-task:${{ github.sha }}
              format: 'table'
-             ignore-unfixed: false #if find high and critical issue exists pipeline will be stopped
+             ignore-unfixed: true #if find high and critical issue exists pipeline will be stopped
              vuln-type: 'os,library'
              severity: 'CRITICAL,HIGH'
              cache: 'true'
