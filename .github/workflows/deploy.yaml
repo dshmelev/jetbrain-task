@@ -12,7 +12,7 @@ permissions: #This gives the repo’s GITHUB_TOKEN the rights to push to GHCR fr
   packages: write
 env:
   REGISTRY: ghcr.io/mina-farajian/jetbrain-task
-  IMAGE_NAME: ${{ github.repository }}
+#  IMAGE_NAME: ${{ github.repository }}
 
 jobs:
   build-and-push:
@@ -114,12 +114,12 @@ jobs:
            run: |
              IMAGE_TAG=dev-${{ steps.branch.outputs.safe-branch }}-${{ github.sha }}
              NAMESPACE=dev-${{ needs.build-and-push.outputs.safe_branch }} 
-             echo "Deploying image: ${{env.REGISTRY}}/${{ env.IMAGE_NAME }}:${IMAGE_TAG} to namespace $NAMESPACE"
+             echo "Deploying image: ${{env.REGISTRY}}/${{ IMAGE_TAG }} to namespace $NAMESPACE"
              
              helm upgrade --install my-app ./charts \
                --namespace $NAMESPACE \
                --create-namespace \
-               --set image.repository=${{env.REGISTRY}}/${{ env.IMAGE_NAME }} \
+               --set image.repository=${{env.REGISTRY}}/${{ IMAGE_TAG }} \
                --set image.tag=${IMAGE_TAG} \
                -f charts/values-dev.yaml
 
