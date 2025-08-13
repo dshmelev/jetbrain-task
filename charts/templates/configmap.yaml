@@ -1,17 +1,17 @@
+{{- if .Values.configmap.data }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
+  name: {{ include "my-python-app.fullname" . }}
+  labels:
+    app: {{ include "my-python-app.fullname" . }}
     name: {{ include "my-python-app.fullname" . }}
-    labels:
-        app: {{ include "my-python-app.fullname" . }}
-        name: {{ include "my-python-app.fullname" . }}
 data:
   application-{{ .Values.env.secret.SPRING_PROFILES_ACTIVE }}.properties: |-
-{{- if .Values.configmap }}
     # User-supplied configuration:
-{{ tpl .Values.configmap . | indent 4 }}
-{{- end }}
-{{- if .Values.additionalConfigmap }}
-    # ---------- supplied from global configuration ----------
-{{ tpl .Values.additionalConfigmap . | indent 4 }}
-{{- end }}
+  {{ tpl (.Values.configmap.data | toYaml) . | indent 4 }}
+  {{- if .Values.additionalConfigmap }}
+# ---------- supplied from global configuration ----------
+  {{ tpl .Values.additionalConfigmap . | indent 4 }}
+  {{- end }}
+  {{- end }}
