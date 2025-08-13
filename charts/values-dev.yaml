@@ -1,15 +1,6 @@
 
 replicaCount: 1
 
-#image:
-#  repository: ghcr.io/Mina-Farajian/jetbrain-task
-#  pullPolicy: IfNotPresent
-#  tag: ""
-#
-#imagePullSecrets: []
-#nameOverride: ""
-#fullnameOverride: ""
-
 podLabels: {}
 
 

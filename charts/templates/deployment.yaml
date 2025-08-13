@@ -15,6 +15,9 @@ spec:
     metadata:
       {{- with .Values.podAnnotations }}
       annotations:
+        checksum/config: { { include (print $.Template.BasePath "/configmap.yaml") . | sha256sum } }
+        checksum/secret: { { include (print $.Template.BasePath "/secret.yaml") . | sha256sum } }
+        checksum/secret-newrelic: { { include (print $.Template.BasePath "/secret-newrelic.yaml") . | sha256sum } }
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:
@@ -40,6 +43,13 @@ spec:
           {{- end }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          envFrom:
+            - secretRef:
+                name: { { .Values.fullnameOverride } }
+            { { - if and .Values.newrelic.enabled } }
+            - secretRef:
+                name: { { .Values.fullnameOverride } }-newrelic
+            {{- end}}
           ports:
             - name: http
               containerPort: {{ .Values.service.port }}
