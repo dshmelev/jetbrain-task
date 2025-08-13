@@ -16,9 +16,9 @@ env:
 
 jobs:
   build-and-push:
-#   if: github.event_name == 'push' && startsWith(github.ref, 'refs/heads/feature/') #if push with branch name starts with feature*
    runs-on: ubuntu-latest
-
+   outputs:
+     safe_branch: ${{ steps.branch.outputs.safe_branch }}
    steps:
      - name: Checkout Code
        uses: actions/checkout@v3
@@ -58,8 +58,6 @@ jobs:
      - name: Build and push
        id: build
        if: steps.check-image.outputs.exists == 'false'
-       outputs:
-         safe_branch: ${{ steps.branch.outputs.safe_branch }}
        uses: docker/build-push-action@v4
        with:
           context: .
