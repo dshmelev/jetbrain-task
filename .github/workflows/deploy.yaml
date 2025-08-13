@@ -65,7 +65,7 @@ jobs:
           push: true
           platforms: linux/amd64
           tags: |
-            ${{env.REGISTRY}}:dev-${{ steps.branch.outputs.safe }}-${{ github.sha }} 
+            ${{env.REGISTRY}}:dev-${{ steps.branch.outputs.safe_branch }}-${{ github.sha }} 
             ${{env.REGISTRY}}:${{ github.sha }} 
 
      - name: Run Trivy vulnerability scanner
@@ -107,16 +107,16 @@ jobs:
          - name: Set up Kubeconfig
            run: |
              mkdir -p ~/.kube
-             echo "${{ secrets.KUBECONFIG_CONTENT }}" > ~/.kube/config
+             echo "${{ secrets.KUBECONFIG_CONTENT }}" | base64 -d > ~/.kube/config
              chmod 600 ~/.kube/config
 
          - name: Deploy to Staging with Helm
            run: |
              IMAGE_TAG=dev-${{ steps.branch.outputs.safe }}-${{ github.sha }}
              NAMESPACE=dev-${{ needs.build-and-push.outputs.safe_branch }} 
-             echo "Deploying image: ${{env.REGISTRY}}}/${{ env.IMAGE_NAME }}:${IMAGE_TAG} to namespace $NAMESPACE
+             echo "Deploying image: ${{env.REGISTRY}}/${{ env.IMAGE_NAME }}:${IMAGE_TAG} to namespace $NAMESPACE
              
-             helm template my-app ./charts \
+             helm upgrade --install my-app ./charts \
                --namespace $NAMESPACE \
                --create-namespace \
                --set image.repository=${{env.REGISTRY}}/${{ env.IMAGE_NAME }} \
