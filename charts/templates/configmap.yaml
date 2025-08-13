@@ -1,10 +1,10 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-    name: {{ .Values.fullnameOverride }}
+    name: {{ include "my-python-app.fullname" . }}
     labels:
-        app: {{ .Values.fullnameOverride }}
-        name: {{ .Values.fullnameOverride }}
+        app: {{ include "my-python-app.fullname" .e }}
+        name: {{ include "my-python-app.fullname" . }}
 data:
   application-{{ .Values.env.secret.SPRING_PROFILES_ACTIVE }}.properties: |-
 {{- if .Values.configmap }}
