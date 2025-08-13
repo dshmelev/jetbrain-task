@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+    name: {{ .Values.fullnameOverride }}
+    labels:
+        app: {{ .Values.fullnameOverride }}
+        name: {{ .Values.fullnameOverride }}
+data:
+  application-{{ .Values.env.secret.SPRING_PROFILES_ACTIVE }}.properties: |-
+{{- if .Values.configmap }}
+    # User-supplied configuration:
+{{ tpl .Values.configmap . | indent 4 }}
+{{- end }}
+{{- if .Values.additionalConfigmap }}
+    # ---------- supplied from global configuration ----------
+{{ tpl .Values.additionalConfigmap . | indent 4 }}
+{{- end }}
