@@ -115,7 +115,7 @@ jobs:
              NAMESPACE=dev-${{ needs.build-and-push.outputs.safe_branch }} 
              echo "Deploying image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${IMAGE_TAG} to namespace $NAMESPACE
              
-             helm upgrade --install my-app ./charts \
+             helm template my-app ./charts \
                --namespace $NAMESPACE \
                --create-namespace \
                --set image.repository=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }} \
