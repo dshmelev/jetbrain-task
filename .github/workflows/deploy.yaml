@@ -112,7 +112,7 @@ jobs:
 
          - name: Deploy to Staging with Helm
            run: |
-             IMAGE_TAG=dev-${{ steps.branch.outputs.safe }}-${{ github.sha }}
+             IMAGE_TAG=dev-${{ steps.branch.outputs.safe-branch }}-${{ github.sha }}
              NAMESPACE=dev-${{ needs.build-and-push.outputs.safe_branch }} 
              echo "Deploying image: ${{env.REGISTRY}}/${{ env.IMAGE_NAME }}:${IMAGE_TAG} to namespace $NAMESPACE
              
