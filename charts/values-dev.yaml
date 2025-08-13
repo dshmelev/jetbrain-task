@@ -32,5 +32,8 @@ ingress:
   enabled: false
   hosts: []
 
+autoscaling:
+  enabled: false
+
 env:
   secret: {}
