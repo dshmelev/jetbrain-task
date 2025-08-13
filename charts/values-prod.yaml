@@ -1,10 +1,6 @@
-
-replicaCount: 4
-
-service:
-  type: ClusterIP
-  port: 80
-
+Deployment:
+replicaCount: 1
+name: my-nginx-prod
 resources:
    limits:
      cpu: 500m
@@ -23,3 +19,21 @@ readinessProbe:
     port: http
 
 
+service:
+  type: ClusterIP
+  port: 80
+  name: my-service-prod
+
+ingress:
+  enabled: false
+  hosts: []
+
+autoscaling:
+  enabled: false
+
+serviceAccount:
+  create: false
+  name: ""
+
+env:
+  secret: {}
