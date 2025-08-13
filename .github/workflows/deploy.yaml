@@ -94,7 +94,7 @@ jobs:
            fi
 
 #################################################### Dev ############################################################################################
-   deploy-dev:
+  deploy-dev:
        needs: build-and-push
        if: startsWith(github.ref, 'refs/heads/feature/') || startsWith(github.ref, 'refs/heads/dev/')
        runs-on: ubuntu-latest
@@ -128,7 +128,7 @@ jobs:
 
 ############################################### Stage #################################################################################################
 
-   deploy-staging:
+  deploy-staging:
      needs: build-and-push
      if: github.ref == 'refs/heads/stage'
      runs-on: ubuntu-latest
@@ -156,7 +156,7 @@ jobs:
 
 ################################################# Production ###############################################################################################
 
-   deploy-production:
+  deploy-production:
      needs: build-and-push
      if: github.ref == 'refs/heads/main'
      runs-on: ubuntu-latest

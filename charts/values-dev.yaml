@@ -1,9 +1,6 @@
 
 replicaCount: 1
 
-podLabels: {}
-
-
 service:
   type: ClusterIP
   port: 80
