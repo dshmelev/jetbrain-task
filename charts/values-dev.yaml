@@ -1,12 +1,7 @@
 
 replicaCount: 1
 name:
-  my-app
-service:
-  type: ClusterIP
-  port: 80
-  name: my-service
-
+  my-app-dev
 resources:
    limits:
      cpu: 100m
@@ -25,3 +20,10 @@ readinessProbe:
     port: http
 
 
+service:
+  type: ClusterIP
+  port: 80
+  name: my-service-dev
+
+env:
+  secret: {}
