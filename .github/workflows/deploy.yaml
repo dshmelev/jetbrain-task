@@ -65,8 +65,8 @@ jobs:
           push: true
           platforms: linux/amd64
           tags: |
-            ghcr.io/${{ github.repository_owner }}/jetbrain-task:dev-${{ steps.branch.outputs.safe }}-${{ github.sha }} 
-            ghcr.io/${{ github.repository_owner }}/jetbrain-task:${{ github.sha }} 
+            ghcr.io/mina-farajian/jetbrain-task:dev-${{ steps.branch.outputs.safe }}-${{ github.sha }} 
+            ghcr.io/mina-farajian/jetbrain-taskk:${{ github.sha }} 
 
      - name: Run Trivy vulnerability scanner
        uses: aquasecurity/trivy-action@0.29.0
