@@ -58,6 +58,8 @@ jobs:
      - name: Build and push
        id: build
        if: steps.check-image.outputs.exists == 'false'
+       outputs:
+         safe_branch: ${{ steps.branch.outputs.safe_branch }}
        uses: docker/build-push-action@v4
        with:
           context: .
