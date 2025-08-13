@@ -100,8 +100,8 @@ jobs:
        if: startsWith(github.ref, 'refs/heads/feature/') || startsWith(github.ref, 'refs/heads/dev/')
        runs-on: ubuntu-latest
        env:
-         IMAGE_TAG=dev-${{ needs.build-and-push.outputs.safe_branch }}-${{ github.sha }}
-         NAMESPACE=dev-${{ needs.build-and-push.outputs.safe_branch }}
+         IMAGE_TAG: dev-${{ needs.build-and-push.outputs.safe_branch }}-${{ github.sha }}
+         NAMESPACE: dev-${{ needs.build-and-push.outputs.safe_branch }}
        steps:
          - name: Checkout repository
            uses: actions/checkout@v3
