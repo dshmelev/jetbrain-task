@@ -96,7 +96,7 @@ jobs:
 #################################################### Dev ############################################################################################
    deploy-dev:
        needs: build-and-push
-       if: github.ref == 'refs/heads/feature'
+       if: startsWith(github.ref, 'refs/heads/feature/') || startsWith(github.ref, 'refs/heads/dev/')
        runs-on: ubuntu-latest
 
        steps:
