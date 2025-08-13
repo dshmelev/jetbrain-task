@@ -1,7 +1,6 @@
 
 replicaCount: 1
-name:
-  my-app-dev
+name: my-app-dev
 resources:
    limits:
      cpu: 100m
