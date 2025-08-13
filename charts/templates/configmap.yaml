@@ -3,7 +3,7 @@ kind: ConfigMap
 metadata:
     name: {{ include "my-python-app.fullname" . }}
     labels:
-        app: {{ include "my-python-app.fullname" .e }}
+        app: {{ include "my-python-app.fullname" . }}
         name: {{ include "my-python-app.fullname" . }}
 data:
   application-{{ .Values.env.secret.SPRING_PROFILES_ACTIVE }}.properties: |-
