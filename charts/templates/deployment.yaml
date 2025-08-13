@@ -45,11 +45,7 @@ spec:
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           envFrom:
             - secretRef:
-                name: { { .Values.fullnameOverride } }
-            { { - if and .Values.newrelic.enabled } }
-            - secretRef:
-                name: { { .Values.fullnameOverride } }-newrelic
-            {{- end}}
+                name: { { .Values.fullnameOverride | default (include "my-python-app.fullname" .) } }
           ports:
             - name: http
               containerPort: {{ .Values.service.port }}
