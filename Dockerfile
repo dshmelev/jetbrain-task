@@ -1,4 +1,4 @@
-FROM nicolaka/netshoot:latest
+FROM nicolaka/netshoot:debian
 
 # Install Python
 RUN apt-get update && \
