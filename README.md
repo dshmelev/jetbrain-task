@@ -58,7 +58,7 @@ To remove a Dev namespace after testing:
 
 ```bash
 kubectl delete namespace dev-<branch>
-
+```
 
 
 Project/
