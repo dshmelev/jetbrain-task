@@ -173,7 +173,6 @@ jobs:
 ################################################# Production ###############################################################################################
 
   deploy-production:
-     needs: deploy-staging
      if: github.event_name == 'workflow_dispatch'
      runs-on: ubuntu-latest
      permissions:
@@ -197,6 +196,16 @@ jobs:
        - name: Checkout repository
          uses: actions/checkout@v3
 
+       - name: Verify Stage Image Exists
+         run: |
+           IMAGE="${{ env.REGISTRY }}:${{ env.IMAGE_TAG }}"
+           echo "Checking if $IMAGE exists..."
+           if docker manifest inspect "$IMAGE" >/dev/null 2>&1; then
+             echo "Image exists, ready to deploy."
+           else
+             echo "ERROR: Stage image not found!"
+             exit 1
+           fi
        - name: Set up Kubeconfig
          run: |
            mkdir -p ~/.kube
