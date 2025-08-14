@@ -112,10 +112,10 @@ jobs:
 
          - name: Deploy to Dev with Helm (dynamic)
            run: |
-             echo "Deploying ${{ env.IMAGE_REPO }}:${{ env.IMAGE_TAG }} to ns ${NAMESPACE}"
+             echo "Deploying ${{ env.IMAGE_REPO }}:${{ env.IMAGE_TAG }} to ns $NAMESPACE"
              
              helm upgrade --install my-app ./charts \
-               --namespace $NAMESPACE \
+               --namespace "$NAMESPACE" \
                --create-namespace \
                --set image.repository=${{ env.IMAGE_REPO }} \
                --set image.tag=${IMAGE_TAG} \
