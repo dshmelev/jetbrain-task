@@ -98,8 +98,8 @@ jobs:
        if: startsWith(github.ref, 'refs/heads/feature/') || startsWith(github.ref, 'refs/heads/dev/')
        runs-on: ubuntu-latest
        env:
-         IMAGE_TAG: dev-${{ needs.build-and-push.outputs.safe_branch }}-${{ github.sha }}
-         NAMESPACE: dev-${{ needs.build-and-push.outputs.safe_branch }}
+         IMAGE_TAG: dev-${{ needs.build.outputs.safe_branch }}-${{ github.sha }}
+         NAMESPACE: dev-${{ needs.build.outputs.safe_branch }}
        steps:
          - name: Checkout repository
            uses: actions/checkout@v3
@@ -112,7 +112,7 @@ jobs:
 
          - name: Deploy to Dev with Helm (dynamic)
            run: |
-             echo "Deploying ${{ env.IMAGE_REPO }}:${{ env.IMAGE_TAG }} to ns $NAMESPACE"
+             echo "Deploying ${{ env.IMAGE_REPO }}:${{ env.IMAGE_TAG }} to ns ${NAMESPACE}"
              
              helm upgrade --install my-app ./charts \
                --namespace $NAMESPACE \
