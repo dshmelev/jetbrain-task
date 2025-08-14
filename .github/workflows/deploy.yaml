@@ -158,7 +158,7 @@ jobs:
             helm upgrade --install my-app ./charts \
             --namespace staging \
             --set image.repository=${{ env.REGISTRY }}\
-            --set image.tag= ${{ env.IMAGE_TAG }}\
+            --set image.tag=${{ env.IMAGE_TAG }}\
             -f charts/values-stage.yaml
              
          - name: Run smoke tests
