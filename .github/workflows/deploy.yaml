@@ -5,28 +5,29 @@ on:
     branches:
       - 'feature/**'
       - 'dev/**'
-  pull_request:
-    types: [ closed ]
-    branches:
-      - stage
-
-  workflow_dispatch:
-    inputs:
-      approve:
-        description: "Type 'YES' to confirm production deployment"
-        required: true
+      - 'stage'
+#  pull_request:
+#    types: [ closed ]
+#    branches:
+#      - stage
+#
+#  workflow_dispatch:
+#    inputs:
+#      approve:
+#        description: "Type 'YES' to confirm production deployment"
+#        required: true
 
 permissions: #This gives the repo’s GITHUB_TOKEN the rights to push to GHCR from Actions.
   contents: read
   packages: write
 env:
-  REGISTRY: ghcr.io/mina-farajian/jetbrain-task
+  IMAGE_REPO: ghcr.io/mina-farajian/jetbrain-task
   STAGE_NS: staging
   PROD_NS: production
 
 jobs:
-  build-and-push:
-   if: github.event_name != 'workflow_dispatch' || github.event.inputs.approve != 'yes'
+  build:
+#   if: github.event_name != 'workflow_dispatch' || github.event.inputs.approve != 'yes'
    runs-on: ubuntu-latest
    outputs:
      safe_branch: ${{ steps.branch.outputs.safe_branch }}
@@ -34,19 +35,19 @@ jobs:
      - name: Checkout Code
        uses: actions/checkout@v3
 
+     - name: Compute safe branch
+       id: branch
+       run: |
+         BRANCH="${GITHUB_REF_NAME}"
+         SAFE_BRANCH=$(echo "$BRANCH" | tr '[:upper:]' '[:lower:]' \
+                       | sed 's#[/_]#-#g' | sed 's#[^a-z0-9-]##g')
+         echo "safe_branch=$SAFE_BRANCH" >> $GITHUB_OUTPUT  
+
      - name: Set up QEMU (for cross-platform builds)
        uses: docker/setup-qemu-action@v2
 
      - name: Set up Docker Buildx   #allows multi-platform builds, caching, and advanced Docker features.
        uses: docker/setup-buildx-action@v3
-
-     - name: Get branch name
-       id: branch
-       run: |
-          BRANCH="${GITHUB_REF_NAME}"
-          SAFE_BRANCH=$(echo "$BRANCH" | tr '[:upper:]' '[:lower:]' \
-                        | sed 's#[/_]#-#g' | sed 's#[^a-z0-9-]##g')
-          echo "safe_branch=$SAFE_BRANCH" >> $GITHUB_OUTPUT
 
      - name: Login to GHCR
        uses: docker/login-action@v2
@@ -55,20 +56,19 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-     - name: Check if  image exists in GHCR
-       run: |
-         IMAGE="${{ env.REGISTRY }}:${{ github.sha }}"
-         IMAGE_STAGE="${{ env.REGISTRY }}:${{ github.sha }}"
-         echo "Checking if $IMAGE exists..."
-         echo "stage iamge is:  $IMAGE_STAGE "
-         if docker manifest inspect "$IMAGE" >/dev/null 2>&1; then
-           echo "exists=true" >> $GITHUB_OUTPUT
-         else
-           echo "exists=false" >> $GITHUB_OUTPUT
-         fi
+#     - name: Check if  image exists in GHCR
+#       run: |
+#         IMAGE="${{ env.REGISTRY }}:${{ github.sha }}"
+#         IMAGE_STAGE="${{ env.REGISTRY }}:${{ github.sha }}"
+#         echo "Checking if $IMAGE exists..."
+#         echo "stage iamge is:  $IMAGE_STAGE "
+#         if docker manifest inspect "$IMAGE" >/dev/null 2>&1; then
+#           echo "exists=true" >> $GITHUB_OUTPUT
+#         else
+#           echo "exists=false" >> $GITHUB_OUTPUT
+#         fi
 
      - name: Build and push (dev)
-       id: build-dev
        if: steps.check-image.outputs.exists == 'false' &&
          (startsWith(github.ref, 'refs/heads/feature/') || startsWith(github.ref, 'refs/heads/dev/'))
        uses: docker/build-push-action@v4
@@ -78,11 +78,9 @@ jobs:
          push: true
          platforms: linux/amd64
          tags: |
-           ${{ env.REGISTRY }}:dev-${{ steps.branch.outputs.safe_branch }}-${{ github.sha }}          
+           ${{ env.IMAGE_REPO }}:dev-${{ steps.branch.outputs.safe_branch }}-${{ github.sha }}          
 
      - name: Build and push (stage)
-       id: build-stage
-       #if: steps.check-image.outputs.exists == 'false' && github.ref == 'refs/heads/stage'
        if: github.ref == 'refs/heads/stage'
        uses: docker/build-push-action@v4
        with:
@@ -91,39 +89,12 @@ jobs:
           push: true
           platforms: linux/amd64
           tags: |
-            ${{ env.REGISTRY }}:${{ github.sha }}   
+            ${{ env.IMAGE_REPO }}:${{ github.sha }}   
          
-
-     - name: Run Trivy vulnerability scanner
-       if: github.ref == 'refs/heads/stage'
-       uses: aquasecurity/trivy-action@0.29.0
-       with:
-             image-ref: ${{ env.REGISTRY }}:${{ github.sha }}
-             format: 'table'
-             ignore-unfixed: true #if find high and critical issue exists pipeline will be stopped
-             vuln-type: 'os,library'
-             severity: 'CRITICAL,HIGH'
-             cache: 'true'
-             output: trivy.txt
-
-
-     - name: Publish Trivy Output to Summary
-       run: |
-           if [[ -s trivy.txt ]]; then
-             {
-               echo "### Security Output"
-               echo "<details><summary>Click to expand</summary>"
-               echo ""
-               echo '```terraform'
-               cat trivy.txt
-               echo '```'
-               echo "</details>"
-             } >> $GITHUB_STEP_SUMMARY
-           fi
 
 #################################################### Dev ############################################################################################
   deploy-dev:
-       needs: build-and-push
+       needs: build
        if: startsWith(github.ref, 'refs/heads/feature/') || startsWith(github.ref, 'refs/heads/dev/')
        runs-on: ubuntu-latest
        env:
@@ -139,26 +110,23 @@ jobs:
              echo "${{ secrets.KUBECONFIG_CONTENT }}" | base64 -d > ~/.kube/config
              chmod 600 ~/.kube/config
 
-         - name: Deploy to Staging with Helm
+         - name: Deploy to Dev with Helm (dynamic)
            run: |
-             echo "$REGISTRY"
-             echo "Deploying image: $REGISTRY/$IMAGE_TAG to namespace $NAMESPACE"
+             echo "Deploying ${{ env.IMAGE_REPO }}:${{ env.IMAGE_TAG }} to ns $NAMESPACE"
              
              helm upgrade --install my-app ./charts \
                --namespace $NAMESPACE \
                --create-namespace \
-               --set image.repository=$REGISTRY \
+               --set image.repository=${{ env.IMAGE_REPO }} \
                --set image.tag=${IMAGE_TAG} \
                -f charts/values-dev.yaml
 
 ############################################### Stage #################################################################################################
 
   deploy-staging:
-     needs: build-and-push
+     needs: build
      if: github.ref == 'refs/heads/stage'
      runs-on: ubuntu-latest
-     outputs:
-       stage_output_image: ${{ env.IMAGE_TAG }}
      env:
       IMAGE_TAG: ${{ github.sha }}
       NAMESPACE: staging
@@ -171,15 +139,38 @@ jobs:
              mkdir -p ~/.kube
              echo "${{ secrets.KUBECONFIG_CONTENT }}" | base64 -d > ~/.kube/config
              chmod 600 ~/.kube/config
+             
+         - name: Trivy scan (staging image)
+           uses: aquasecurity/trivy-action@0.29.0
+           with:
+             image-ref: ${{ env.IMAGE_REPO }}:${{ env.IMAGE_TAG }}
+             format: 'table'
+             ignore-unfixed: true
+             vuln-type: 'os,library'
+             severity: 'CRITICAL,HIGH'
+             cache: 'true'
+             output: trivy.txt
+
+         - name: Publish Trivy summary
+           run: |
+             if [[ -s trivy.txt ]]; then
+               {
+                 echo "### Trivy scan for ${{ env.IMAGE_REPO }}:${{ env.IMAGE_TAG }}"
+                 echo '```'
+                 cat trivy.txt
+                 echo '```'
+               } >> $GITHUB_STEP_SUMMARY
+             fi
+             
 
          - name: Deploy to Staging
            run: |
-            echo "Deploying image: ${{ env.REGISTRY }}:${{ env.IMAGE_TAG }} to staging"
+            echo "Deploying image: ${{ env.REGISTRY }}:${{ env.IMAGE_TAG }} to  ns ${{ env.STAGE_NS }}"
 
             helm upgrade --install my-app ./charts \
             --namespace ${{ env.STAGE_NS}} \
-            --set image.repository=${{ env.REGISTRY }} \
-            --set image.tag=${{ env.IMAGE_TAG }} \
+            --set image.repository=${{ env.IMAGE_REPO }} \
+            --set image.tag=${ env.IMAGE_TAG } \
             -f charts/values-stage.yaml
              
 #         - name: Run smoke tests
@@ -190,13 +181,11 @@ jobs:
 ################################################# Production ###############################################################################################
 
   deploy-production:
-     if: github.event_name == 'workflow_dispatch'
+     needs: deploy-staging
+     if: github.ref == 'refs/heads/stage'
      runs-on: ubuntu-latest
-     permissions:
-      issues: write
      concurrency: production  # Prevent multiple prod deploys at same time
      env:
-       name: production
        IMAGE_TAG: ${{ github.sha }}
 
      steps:
@@ -212,16 +201,23 @@ jobs:
        - name: Checkout repository
          uses: actions/checkout@v3
 
-       - name: Verify Staging Image Exists
+       - name: Login to GHCR (for verify)
+         uses: docker/login-action@v2
+         with:
+           registry: ghcr.io
+           username: ${{ github.actor }}
+           password: ${{ secrets.GITHUB_TOKEN }}
+
+       - name: Verify the staging image exists (no rebuild)
          run: |
-           IMAGE="${{ env.REGISTRY }}:${{ env.IMAGE_TAG }}"
-           echo "Checking image $IMAGE"
+           IMAGE="${{ env.IMAGE_REPO }}:${{ env.IMAGE_TAG }}"
+           echo "Checking $IMAGE"
            if docker manifest inspect "$IMAGE" >/dev/null 2>&1; then
-             echo "Image exists; proceeding."
+             echo "Image exists."
            else
-             echo "ERROR: ${{ env.IMAGE_TAG }} not found in GHCR. Make sure this SHA is the one built/deployed to staging."
+             echo "ERROR: $IMAGE not found. Production must reuse staging image."
              exit 1
-           fi  
+           fi
 
        - name: Set up Kubeconfig
          run: |
@@ -231,10 +227,10 @@ jobs:
 
        - name: Deploy to Production with Helm
          run: |
-           echo "Deploying image: ${{ env.REGISTRY }}/${{ env.IMAGE_TAG }} to ${{ env.PROD_NS }}"
+           echo "Deploying image: ${{ env.IMAGE_REPO }}/${{ env.IMAGE_TAG }} to ${{ env.PROD_NS }}"
 
            helm upgrade --install my-app ./charts \
              --namespace ${{ env.PROD_NS}} \
-             --set image.repository=${{ env.REGISTRY }} \
+             --set image.repository=${{ env.IMAGE_REPO }} \
              --set image.tag=${{ env.IMAGE_TAG }} \
              -f charts/values-prod.yaml
