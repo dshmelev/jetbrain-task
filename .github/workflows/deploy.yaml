@@ -9,7 +9,12 @@ on:
     types: [ closed ]
     branches:
       - stage
+
   workflow_dispatch:
+    inputs:
+      approve:
+        description: "Type 'YES' to confirm production deployment"
+        required: true
 
 permissions: #This gives the repo’s GITHUB_TOKEN the rights to push to GHCR from Actions.
   contents: read
@@ -21,6 +26,7 @@ env:
 
 jobs:
   build-and-push:
+   if: github.event_name != 'workflow_dispatch' || github.event.inputs.approve != 'yes'
    runs-on: ubuntu-latest
    outputs:
      safe_branch: ${{ steps.branch.outputs.safe_branch }}
@@ -129,16 +135,14 @@ jobs:
                --set image.tag=${IMAGE_TAG} \
                -f charts/values-dev.yaml
 
-
-
-
-
 ############################################### Stage #################################################################################################
 
   deploy-staging:
      needs: build-and-push
      if: github.ref == 'refs/heads/stage'
      runs-on: ubuntu-latest
+     outputs:
+       image-tag: ${{ env.IMAGE_TAG }}
      env:
       IMAGE_TAG: ${{ github.sha }}
       NAMESPACE: staging
@@ -170,20 +174,22 @@ jobs:
 ################################################# Production ###############################################################################################
 
   deploy-production:
-     needs: build-and-push
-     if: github.ref == 'refs/heads/main'
+     if: github.event_name == 'workflow_dispatch'
      runs-on: ubuntu-latest
-     environment:
-       name: production
-       url: https://your-production-url.com
+     permissions:
+      issues: write
      concurrency: production  # Prevent multiple prod deploys at same time
+     env:
+       name: production
+       IMAGE_TAG: ${{ needs.deploy-staging.outputs.image-tag }}
+       url: https://your-production-url.com
 
      steps:
        - name: Await Manual Approval
          uses: trstringer/manual-approval@v1
          with:
-           secret: ${{ github.TOKEN }}
-           approvers: "Mina-Farajian"
+           secret: ${{ secrets.GITHUB_TOKEN }}
+           approvers: Mina-Farajian
            minimum-approvals: 1
            issue-title: "Manual Approval Required for Production deploy"
            issue-body: "Please approve or deny the deployment."
@@ -191,6 +197,16 @@ jobs:
        - name: Checkout repository
          uses: actions/checkout@v3
 
+       - name: Verify Staging Image Exists
+         run: |
+           IMAGE="${{ env.REGISTRY }}:${{ env.IMAGE_TAG }}"
+           echo "Checking $IMAGE..."
+           if docker manifest inspect "$IMAGE" >/dev/null 2>&1; then
+             echo "Image exists; proceeding."
+           else
+             echo "ERROR: $IMAGE not found in GHCR. Make sure this SHA is the one built/deployed to staging."
+             exit 1
+           fi
        - name: Set up Kubeconfig
          run: |
            mkdir -p ~/.kube
@@ -200,11 +216,10 @@ jobs:
        - name: Deploy to Production with Helm
          run: |
            IMAGE_TAG=${{ github.sha }}
-           echo "Deploying image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${IMAGE_TAG} to production"
+           echo "Deploying image: ${{ env.REGISTRY }}/${{ env.IMAGE_TAG }} to ${{ env.PROD_NS }}"
 
            helm upgrade --install my-app ./charts \
              --namespace ${{ env.PROD_NS}} \
-             --create-namespace \
-             --set image.repository=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }} \
+             --set image.repository=${{ env.REGISTRY }} \
              --set image.tag=${IMAGE_TAG} \
              -f charts/values-prod.yaml
