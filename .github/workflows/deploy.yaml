@@ -66,9 +66,22 @@ jobs:
            echo "exists=false" >> $GITHUB_OUTPUT
          fi
 
-     - name: Build and push
-       id: build
-       if: steps.check-image.outputs.exists == 'false'
+     - name: Build and push (dev)
+       id: build-dev
+       if: steps.check-image.outputs.exists == 'false' &&
+         (startsWith(github.ref, 'refs/heads/feature/') || startsWith(github.ref, 'refs/heads/dev/'))
+       uses: docker/build-push-action@v4
+       with:
+         context: .
+         file: ./Dockerfile
+         push: true
+         platforms: linux/amd64
+         tags: |
+           ${{ env.REGISTRY }}:dev-${{ steps.branch.outputs.safe_branch }}-${{ github.sha }}
+
+     - name: Build and push (stage)
+       id: build-stage
+       if: steps.check-image.outputs.exists == 'false' && github.ref == 'refs/heads/stage'
        uses: docker/build-push-action@v4
        with:
           context: .
@@ -76,13 +89,13 @@ jobs:
           push: true
           platforms: linux/amd64
           tags: |
-            ${{env.REGISTRY}}:dev-${{ steps.branch.outputs.safe_branch }}-${{ github.sha }} 
-            ${{env.REGISTRY}}:${{ github.sha }} 
+            ${{ env.REGISTRY }}:${{ github.sha }}   
 
      - name: Run Trivy vulnerability scanner
+       if: github.ref == 'refs/heads/stage'
        uses: aquasecurity/trivy-action@0.29.0
        with:
-             image-ref: ${{env.REGISTRY}}:${{ github.sha }}
+             image-ref: ${{ env.REGISTRY }}:${{ github.sha }}
              format: 'table'
              ignore-unfixed: true #if find high and critical issue exists pipeline will be stopped
              vuln-type: 'os,library'
@@ -175,6 +188,7 @@ jobs:
 
   deploy-production:
      if: github.event_name == 'workflow_dispatch'
+     needs: deploy-staging
      runs-on: ubuntu-latest
      permissions:
       issues: write
@@ -221,5 +235,5 @@ jobs:
            helm upgrade --install my-app ./charts \
              --namespace ${{ env.PROD_NS}} \
              --set image.repository=${{ env.REGISTRY }} \
-             --set image.tag=${IMAGE_TAG} \
+             --set image.tag=${{ env.IMAGE_TAG }} \
              -f charts/values-prod.yaml
