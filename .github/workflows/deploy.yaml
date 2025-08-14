@@ -107,7 +107,7 @@ jobs:
      - name: Run Trivy vulnerability scanner
        uses: aquasecurity/trivy-action@0.29.0
        with:
-             image-ref: ${{env.REGISTRY}}:${{ github.sha }}
+             image-ref: ${{ startsWith(github.ref, 'refs/heads/feature/') || startsWith(github.ref, 'refs/heads/dev/') && format('{0}:dev-{1}-{2}', env.REGISTRY, steps.branch.outputs.safe_branch, github.sha) || format('{0}:{1}', env.REGISTRY, github.sha) }}
              format: 'table'
              ignore-unfixed: true #if find high and critical issue exists pipeline will be stopped
              vuln-type: 'os,library'
