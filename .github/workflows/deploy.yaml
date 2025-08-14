@@ -83,7 +83,8 @@ jobs:
 
      - name: Build and push (stage)
        id: build-stage
-       if: steps.check-image.outputs.exists == 'false' && github.ref == 'refs/heads/stage'
+       #if: steps.check-image.outputs.exists == 'false' && github.ref == 'refs/heads/stage'
+       if: github.ref == 'refs/heads/stage'
        uses: docker/build-push-action@v4
        with:
           context: .
