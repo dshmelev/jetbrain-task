@@ -5,11 +5,11 @@ on:
     branches:
       - 'feature/**'
       - 'dev/**'
-      - 'main'
   pull_request:
     types: [ closed ]
     branches:
       - stage
+
   workflow_dispatch:
 
 permissions: #This gives the repo’s GITHUB_TOKEN the rights to push to GHCR from Actions.
@@ -170,6 +170,8 @@ jobs:
      needs: build-and-push
      if: github.ref == 'refs/heads/main'
      runs-on: ubuntu-latest
+     permissions:
+      issues: write
      env:
        name: production
        url: https://your-production-url.com
@@ -180,7 +182,7 @@ jobs:
          uses: trstringer/manual-approval@v1
          with:
            secret: ${{ github.TOKEN }}
-           approvers: "Mina-Farajian"
+           approvers: Mina-Farajian
            minimum-approvals: 1
            issue-title: "Manual Approval Required for Production deploy"
            issue-body: "Please approve or deny the deployment."
@@ -201,7 +203,7 @@ jobs:
 
            helm upgrade --install my-app ./charts \
              --namespace ${{ env.PROD_NS}} \
-             --set image.repository=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }} \
+             --set image.repository=${{ env.REGISTRY }} \
              --set image.tag=${IMAGE_TAG} \
              -f charts/values-prod.yaml
 
