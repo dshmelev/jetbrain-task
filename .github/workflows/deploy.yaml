@@ -227,7 +227,7 @@ jobs:
 
        - name: Deploy to Production with Helm
          run: |
-           echo "Deploying image: ${{ eenv.IMAGE_REPO }}/${{ env.IMAGE_TAG }} to ${{ env.PROD_NS }}"
+           echo "Deploying image: ${{ env.IMAGE_REPO }}/${{ env.IMAGE_TAG }} to ${{ env.PROD_NS }}"
 
            helm upgrade --install my-app ./charts \
              --namespace ${{ env.PROD_NS}} \
