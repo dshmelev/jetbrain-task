@@ -139,8 +139,8 @@ jobs:
      if: github.ref == 'refs/heads/stage'
      runs-on: ubuntu-latest
      env:
-         IMAGE_TAG: ${{env.REGISTRY}}:${{ github.sha }}
-         NAMESPACE: staging
+      IMAGE_TAG: ${{env.REGISTRY}}:${{ github.sha }}
+      NAMESPACE: staging
      steps:
          - name: Checkout repository
            uses: actions/checkout@v3
