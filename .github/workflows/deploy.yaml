@@ -57,10 +57,9 @@ jobs:
 
      - name: Check if  image exists in GHCR
        run: |
-         IMAGE_DEV="${{ env.REGISTRY }}:dev-${{ steps.branch.outputs.safe_branch }}-${{ github.sha }}"
+         IMAGE="${{ env.REGISTRY }}:${{ github.sha }}"
          IMAGE_STAGE="${{ env.REGISTRY }}:${{ github.sha }}"
          echo "Checking if $IMAGE exists..."
-         echo "dev iamge is:  $IMAGE_DEV "
          echo "stage iamge is:  $IMAGE_STAGE "
          if docker manifest inspect "$IMAGE" >/dev/null 2>&1; then
            echo "exists=true" >> $GITHUB_OUTPUT
@@ -83,7 +82,8 @@ jobs:
 
      - name: Build and push (stage)
        id: build-stage
-       if: steps.check-image.outputs.exists == 'false' && github.ref == 'refs/heads/stage'
+       #if: steps.check-image.outputs.exists == 'false' && github.ref == 'refs/heads/stage'
+       if: github.ref == 'refs/heads/stage'
        uses: docker/build-push-action@v4
        with:
           context: .
