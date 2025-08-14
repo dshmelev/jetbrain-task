@@ -11,6 +11,10 @@ on:
       - stage
 
   workflow_dispatch:
+    inputs:
+      approve:
+        description: 'Approve production deploy'
+        required: true
 
 permissions: #This gives the repo’s GITHUB_TOKEN the rights to push to GHCR from Actions.
   contents: read
@@ -136,6 +140,8 @@ jobs:
      needs: build-and-push
      if: github.ref == 'refs/heads/stage'
      runs-on: ubuntu-latest
+     outputs:
+       image-tag: ${{ env.IMAGE_TAG }}
      env:
       IMAGE_TAG: ${{ github.sha }}
       NAMESPACE: staging
@@ -167,21 +173,22 @@ jobs:
 ################################################# Production ###############################################################################################
 
   deploy-production:
-     needs: build-and-push
-     if: github.ref == 'refs/heads/main'
+     needs: deploy-staging
+     if: github.event_name == 'workflow_dispatch'
      runs-on: ubuntu-latest
      permissions:
       issues: write
+     concurrency: production  # Prevent multiple prod deploys at same time
      env:
        name: production
+       IMAGE_TAG: ${{ needs.deploy-staging.outputs.image-tag }}
        url: https://your-production-url.com
-     concurrency: production  # Prevent multiple prod deploys at same time
 
      steps:
        - name: Await Manual Approval
          uses: trstringer/manual-approval@v1
          with:
-           secret: ${{ github.TOKEN }}
+           secret: ${{ GITHUB_TOKEN }}
            approvers: Mina-Farajian
            minimum-approvals: 1
            issue-title: "Manual Approval Required for Production deploy"
@@ -206,5 +213,3 @@ jobs:
              --set image.repository=${{ env.REGISTRY }} \
              --set image.tag=${IMAGE_TAG} \
              -f charts/values-prod.yaml
-
-#test
