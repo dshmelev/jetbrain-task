@@ -197,9 +197,20 @@ jobs:
      concurrency: production  # Prevent multiple prod deploys at same time
      env:
        name: production
-       IMAGE_TAG: ${{ needs.deploy-staging.outputs.stage_output_image }}
+       IMAGE_TAG: ${{ github.sha }}
 
      steps:
+       - name: Verify Staging Image Exists
+         run: |
+           IMAGE="${{ env.REGISTRY }}:${{ env.IMAGE_TAG }}"
+           echo "Checking image $IMAGE"
+           if docker manifest inspect "$IMAGE" >/dev/null 2>&1; then
+             echo "Image exists; proceeding."
+           else
+             echo "ERROR: $IMAGE not found in GHCR. Make sure this SHA is the one built/deployed to staging."
+             exit 1
+           fi
+
        - name: Await Manual Approval
          uses: trstringer/manual-approval@v1
          with:
@@ -212,16 +223,6 @@ jobs:
        - name: Checkout repository
          uses: actions/checkout@v3
 
-       - name: Verify Staging Image Exists
-         run: |
-           IMAGE="${{ env.REGISTRY }}:${{ env.IMAGE_TAG }}"
-           echo "Checking image $IMAGE"
-           if docker manifest inspect "$IMAGE" >/dev/null 2>&1; then
-             echo "Image exists; proceeding."
-           else
-             echo "ERROR: $IMAGE not found in GHCR. Make sure this SHA is the one built/deployed to staging."
-             exit 1
-           fi
        - name: Set up Kubeconfig
          run: |
            mkdir -p ~/.kube
