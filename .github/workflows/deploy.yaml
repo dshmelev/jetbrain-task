@@ -13,7 +13,7 @@ on:
   workflow_dispatch:
     inputs:
       approve:
-        description: 'Approve production deploy'
+        description: "Type 'YES' to confirm production deployment"
         required: true
 
 permissions: #This gives the repo’s GITHUB_TOKEN the rights to push to GHCR from Actions.
@@ -26,7 +26,7 @@ env:
 
 jobs:
   build-and-push:
-   if: github.event_name != 'workflow_dispatch' || github.event.inputs.approve != 'approve'
+   if: github.event_name != 'workflow_dispatch' || github.event.inputs.approve != 'yes'
    runs-on: ubuntu-latest
    outputs:
      safe_branch: ${{ steps.branch.outputs.safe_branch }}
