@@ -176,7 +176,7 @@ jobs:
 
   deploy-production:
      needs: deploy-staging
-     if: github.event_name == 'workflow_dispatch'
+     if: (github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/stage')
      runs-on: ubuntu-latest
      concurrency: production  # Prevent multiple prod deploys at same time
      env:
