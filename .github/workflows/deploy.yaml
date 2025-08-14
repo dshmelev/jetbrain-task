@@ -26,7 +26,7 @@ env:
 
 jobs:
   build-and-push:
-   if: github.event_name != 'workflow_dispatch' || github.event.inputs.approve != 'production'
+   if: github.event_name != 'workflow_dispatch' || github.event.inputs.approve != 'approve'
    runs-on: ubuntu-latest
    outputs:
      safe_branch: ${{ steps.branch.outputs.safe_branch }}
