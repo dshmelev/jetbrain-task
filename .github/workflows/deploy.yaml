@@ -55,16 +55,19 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-     - name: Check if image exists in GHCR
+     - name: Check if  image exists in GHCR
        id: check-image
        run: |
-         IMAGE="ghcr.io/${{ github.repository_owner }}/jetbrain-task:${{ github.sha }}"
+         IMAGE_DEV="${{ env.REGISTRY }}:dev-${{ steps.branch.outputs.safe_branch }}-${{ github.sha }}"
+         IMAGE_STAGE="${{ env.REGISTRY }}:${{ github.sha }}"
          echo "Checking if $IMAGE exists..."
-         if docker manifest inspect "$IMAGE" >/dev/null 2>&1; then
-           echo "exists=true" >> $GITHUB_OUTPUT
-         else
-           echo "exists=false" >> $GITHUB_OUTPUT
-         fi
+         echo "dev iamge is:  $IMAGE_DEV "
+         echo "stage iamge is:  $IMAGE_STAGE "
+#         if docker manifest inspect "$IMAGE" >/dev/null 2>&1; then
+#           echo "exists=true" >> $GITHUB_OUTPUT
+#         else
+#           echo "exists=false" >> $GITHUB_OUTPUT
+#         fi
 
      - name: Build and push (dev)
        id: build-dev
@@ -79,6 +82,14 @@ jobs:
          tags: |
            ${{ env.REGISTRY }}:dev-${{ steps.branch.outputs.safe_branch }}-${{ github.sha }}
 
+     - name: Check if  image DEV exists in GHCR
+       id: check-image
+       run: |
+         IMAGE_DEV="${{ env.REGISTRY }}:dev-${{ steps.branch.outputs.safe_branch }}-${{ github.sha }}"
+         echo "Checking if $IMAGE exists..."
+         echo "dev iamge is:  $IMAGE_DEV "
+           
+
      - name: Build and push (stage)
        id: build-stage
        if: steps.check-image.outputs.exists == 'false' && github.ref == 'refs/heads/stage'
@@ -90,6 +101,13 @@ jobs:
           platforms: linux/amd64
           tags: |
             ${{ env.REGISTRY }}:${{ github.sha }}   
+
+     - name: Check if stage image exists in GHCR
+       id: check-image
+       run: |
+         IMAGE_STAGE="${{ env.REGISTRY }}:${{ github.sha }}"
+         echo "Checking if $IMAGE exists..."
+         echo "stage iamge is:  $IMAGE_STAGE "            
 
      - name: Run Trivy vulnerability scanner
        if: github.ref == 'refs/heads/stage'
@@ -188,7 +206,6 @@ jobs:
 
   deploy-production:
      if: github.event_name == 'workflow_dispatch'
-     needs: deploy-staging
      runs-on: ubuntu-latest
      permissions:
       issues: write
