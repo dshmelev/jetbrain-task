@@ -69,8 +69,7 @@ jobs:
 #         fi
 
      - name: Build and push (dev)
-       if: steps.check-image.outputs.exists == 'false' &&
-         (startsWith(github.ref, 'refs/heads/feature/') || startsWith(github.ref, 'refs/heads/dev/'))
+       if: (startsWith(github.ref, 'refs/heads/feature/') || startsWith(github.ref, 'refs/heads/dev/'))
        uses: docker/build-push-action@v4
        with:
          context: .
