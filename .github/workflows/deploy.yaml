@@ -139,7 +139,7 @@ jobs:
      if: github.ref == 'refs/heads/stage'
      runs-on: ubuntu-latest
      env:
-      IMAGE_TAG: ${{env.REGISTRY}}:${{ github.sha }}
+      IMAGE_TAG: ${{ github.sha }}
       NAMESPACE: staging
      steps:
          - name: Checkout repository
@@ -153,12 +153,12 @@ jobs:
 
          - name: Deploy to Staging
            run: |
-            echo "Deploying image: $IMAGE_TAG to staging"
+            echo "Deploying image: ${{ env.REGISTRY }}:${{ env.IMAGE_TAG }} to staging"
 
             helm upgrade --install my-app ./charts \
             --namespace staging \
-            --set image.repository=$REGISTRY\
-            --set image.tag=${IMAGE_TAG} \
+            --set image.repository=${{ env.REGISTRY }}\
+            --set image.tag= ${{ env.IMAGE_TAG }}\
             -f charts/values-stage.yaml
              
          - name: Run smoke tests
