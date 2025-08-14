@@ -6,11 +6,11 @@ on:
       - 'feature/**'
       - 'dev/**'
       - 'stage'
-  workflow_dispatch:
-    inputs:
-      approve:
-        description: "Type 'YES' to confirm production deployment"
-        required: true
+  workflow_dispatch: {}
+#    inputs:
+#      approve:
+#        description: "Type 'YES' to confirm production deployment"
+#        required: true
 
 permissions: #This gives the repo’s GITHUB_TOKEN the rights to push to GHCR from Actions.
   contents: read
@@ -164,7 +164,7 @@ jobs:
 
   deploy-production:
      needs: deploy-staging
-     if: (github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/stage')
+     if: github.ref == 'refs/heads/stage'
      runs-on: ubuntu-latest
      concurrency: production  # Prevent multiple prod deploys at same time
      env:
