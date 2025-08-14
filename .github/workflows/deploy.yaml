@@ -51,18 +51,6 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-#     - name: Check if  image exists in GHCR
-#       run: |
-#         IMAGE="${{ env.REGISTRY }}:${{ github.sha }}"
-#         IMAGE_STAGE="${{ env.REGISTRY }}:${{ github.sha }}"
-#         echo "Checking if $IMAGE exists..."
-#         echo "stage iamge is:  $IMAGE_STAGE "
-#         if docker manifest inspect "$IMAGE" >/dev/null 2>&1; then
-#           echo "exists=true" >> $GITHUB_OUTPUT
-#         else
-#           echo "exists=false" >> $GITHUB_OUTPUT
-#         fi
-
      - name: Build and push (dev)
        if: (startsWith(github.ref, 'refs/heads/feature/') || startsWith(github.ref, 'refs/heads/dev/'))
        uses: docker/build-push-action@v4
