@@ -66,20 +66,7 @@ jobs:
            echo "exists=false" >> $GITHUB_OUTPUT
          fi
 
-#     - name: Build and push
-#       id: build
-#       if: steps.check-image.outputs.exists == 'false'
-#       uses: docker/build-push-action@v4
-#       with:
-#          context: .
-#          file: ./Dockerfile
-#          push: true
-#          platforms: linux/amd64
-#          tags: |
-#            ${{env.REGISTRY}}:dev-${{ steps.branch.outputs.safe_branch }}-${{ github.sha }}
-#            ${{env.REGISTRY}}:${{ github.sha }}
-
-     - name: Build and push (dev/feature)
+     - name: Build and push (dev)
        id: build-dev
        if: steps.check-image.outputs.exists == 'false' &&
          (startsWith(github.ref, 'refs/heads/feature/') || startsWith(github.ref, 'refs/heads/dev/'))
@@ -201,6 +188,7 @@ jobs:
 
   deploy-production:
      if: github.event_name == 'workflow_dispatch'
+     needs: deploy-staging
      runs-on: ubuntu-latest
      permissions:
       issues: write
@@ -247,5 +235,5 @@ jobs:
            helm upgrade --install my-app ./charts \
              --namespace ${{ env.PROD_NS}} \
              --set image.repository=${{ env.REGISTRY }} \
-             --set image.tag=${IMAGE_TAG} \
+             --set image.tag=${{ env.IMAGE_TAG }} \
              -f charts/values-prod.yaml
