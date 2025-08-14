@@ -173,7 +173,7 @@ jobs:
      needs: build-and-push
      if: github.ref == 'refs/heads/main'
      runs-on: ubuntu-latest
-     environment:
+     env:
        name: production
        url: https://your-production-url.com
      concurrency: production  # Prevent multiple prod deploys at same time
@@ -204,7 +204,6 @@ jobs:
 
            helm upgrade --install my-app ./charts \
              --namespace ${{ env.PROD_NS}} \
-             --create-namespace \
              --set image.repository=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }} \
              --set image.tag=${IMAGE_TAG} \
              -f charts/values-prod.yaml
