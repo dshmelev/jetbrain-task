@@ -11,16 +11,16 @@ resources:
 livenessProbe:
   httpGet:
     path: /
-    port: 8000
+    port: http
 readinessProbe:
   httpGet:
     path: /
-    port: 8000
+    port: http
 
 
 service:
   type: ClusterIP
-  port: 8000
+  port: 80
   name: my-service-dev
 
 ingress:

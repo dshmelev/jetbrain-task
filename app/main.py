@@ -13,5 +13,5 @@ def hello_world():
 
 # Run the app if the script is executed directly
 if __name__ == '__main__':
-    # The app will be available on all IP addresses (host='0.0.0.0') and on port 8000
-    app.run(host='0.0.0.0', port=8000)
+    # The app will be available on all IP addresses (host='0.0.0.0') and on port 80
+    app.run(host='0.0.0.0', port=80)
