@@ -203,3 +203,5 @@ jobs:
              --set image.repository=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }} \
              --set image.tag=${IMAGE_TAG} \
              -f charts/values-prod.yaml
+
+#test
