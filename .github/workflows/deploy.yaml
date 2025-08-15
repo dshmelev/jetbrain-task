@@ -11,10 +11,6 @@ on:
       - 'stage'
   workflow_dispatch:
         inputs:
-          branch_name:
-            description: "Dev Branch name to clean"
-            required: true
-            type: string
           approve:
             description: "Type 'YES' to confirm production"
             required: true
