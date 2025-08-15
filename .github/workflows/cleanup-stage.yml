@@ -10,7 +10,7 @@ on:
 
 jobs:
   cleanup-stage:
-    if: github.event_name == 'workflow_dispatch' && github.ref != 'refs/heads/main' && github.ref != 'refs/heads/stage'   # Prevent running on main branch
+    if: github.ref != 'refs/heads/main' && github.ref != 'refs/heads/stage'   # Prevent running on main branch
     runs-on: ubuntu-latest
     steps:
       - name: Compute safe branch
