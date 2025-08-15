@@ -28,7 +28,6 @@ The workflow (`.github/workflows/pipeline.yml`) automates:
 | Event Type              | Branch Pattern             | Action Taken                  |
 |-------------------------|----------------------------|--------------------------------|
 | **Push**                | `feature/**`, `dev/**`     | Build & deploy to **Dev**     |
-| **Push**                | `stage`                    | Build, scan, deploy to **Staging** |
 | **Pull Request Closed** | Target = `stage`            | Build, scan, deploy to **Staging** |
 | **Manual Dispatch**     | _n/a_                       | Deploy to **Production** (with approval) |
 
@@ -56,7 +55,7 @@ The workflow (`.github/workflows/pipeline.yml`) automates:
 ### **4. deploy-production**
 - Triggered manually with `workflow_dispatch`.
 - Inputs:
-  - `approve` → must be `"YES"`
+  - `approve` → must be `"YES"/"yes"`
   - `image_tag` → SHA tag from staging build.
 - Manual approval step before deployment.
 - Verifies image exists in GHCR before deploy.
