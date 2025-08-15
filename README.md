@@ -9,7 +9,7 @@ This repository contains a **GitHub Actions** pipeline for building, scanning, a
 
 ## 📋 Pipeline Overview
 
-The workflow (`.github/workflows/pipeline.yml`) automates:
+The workflow (`.github/workflows/deploy.yml`) automates:
 
 - **Docker Image Build & Push** → Builds multi-platform images and pushes to **GitHub Container Registry (GHCR)**.
 - **Environment Deployments**:
