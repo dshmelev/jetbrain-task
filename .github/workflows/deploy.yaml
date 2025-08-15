@@ -153,7 +153,7 @@ jobs:
 
          - name: Deploy to Staging
            run: |
-            echo "Deploying image: ${{ env.REGISTRY }}:${{ env.IMAGE_TAG }} to  ns ${{ env.STAGE_NS }}"
+            echo "Deploying image: ${{ env.REGISTRY }} ${{ env.IMAGE_TAG }} to  ns ${{ env.STAGE_NS }}"
 
             helm upgrade --install my-app ./charts \
             --namespace ${{ env.STAGE_NS}} \
