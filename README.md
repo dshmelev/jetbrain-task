@@ -7,22 +7,6 @@ This repository contains a **GitHub Actions** pipeline for building, scanning, a
 
 ---
 
-## 📋 Pipeline Overview
-
-The workflow (`.github/workflows/deploy.yml`) automates:
-
-- **Docker Image Build & Push** → Builds multi-platform images and pushes to **GitHub Container Registry (GHCR)**.
-- **Environment Deployments**:
-  - **Dev** → Auto-deploys feature/dev branches to dynamic namespaces.
-  - **Staging** → Deploys `stage` branch image with Trivy vulnerability scanning.
-  - **Production** → Manually approved deployment reusing the staging image.
-- **Security & Safety**:
-  - Vulnerability scan before staging deploy.
-  - Manual approval required for production.
-  - Concurrency control to prevent simultaneous prod deployments.
-
----
-
 ## 🚀 Trigger Rules
 
 | Event Type              | Branch Pattern             | Action Taken                  |
