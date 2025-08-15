@@ -9,11 +9,7 @@ on:
     types: [ opened ]
     branches:
       - 'stage'
-  workflow_dispatch:
-        inputs:
-          approve:
-            description: "Type 'YES' to confirm production"
-            required: true
+  workflow_dispatch: {}
 
 permissions: #This gives the repo’s GITHUB_TOKEN the rights to push to GHCR from Actions.
   contents: read
