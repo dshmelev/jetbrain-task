@@ -10,10 +10,14 @@ on:
     branches:
       - 'stage'
   workflow_dispatch:
-    inputs:
-      image_tag:
-        description: "Staging image tag to Deploy"
-        required: true
+        inputs:
+          branch_name:
+            description: "Dev Branch name to clean"
+            required: true
+            type: string
+          approve:
+            description: "Type 'YES' to confirm production"
+            required: true
 
 permissions: #This gives the repo’s GITHUB_TOKEN the rights to push to GHCR from Actions.
   contents: read
@@ -105,6 +109,36 @@ jobs:
                --set image.repository=${{ env.IMAGE_REPO }} \
                --set image.tag=${IMAGE_TAG} \
                -f charts/values-dev.yaml
+############################################## Cleanup NS ###############################################
+
+  cleanup-stage:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Compute safe branch
+        id: branch
+        run: |
+          BRANCH="${{ github.event.inputs.branch_name }}"
+          SAFE_BRANCH=$(echo "$BRANCH" | tr '[:upper:]' '[:lower:]' \
+                        | sed 's#[/_]#-#g' | sed 's#[^a-z0-9-]##g')
+          echo "safe_branch=$SAFE_BRANCH" >> $GITHUB_OUTPUT  
+
+      - name: Set up Kubeconfig
+        run: |
+          mkdir -p ~/.kube
+          echo "${{ secrets.KUBECONFIG_CONTENT }}" | base64 -d > ~/.kube/config
+          chmod 600 ~/.kube/config
+
+      - name: Delete namespace
+        run: |
+          NS="dev-${{ steps.branch.outputs.safe_branch }}"
+          echo "Deleting namespace: $NS"
+          kubectl delete namespace "$NS" --wait || echo "Namespace $NS not found"
+
+      - name: Summary
+        run: |
+          echo "## Stage Cleanup" >> $GITHUB_STEP_SUMMARY
+          echo "**Branch:** ${{ github.event.inputs.branch_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Namespace deleted:** dev-${{ steps.branch.outputs.safe_branch }}" >> $GITHUB_STEP_SUMMARY
 ############################################### Stage #################################################################################################
 
   deploy-staging:
