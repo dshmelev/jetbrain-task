@@ -7,10 +7,6 @@ on:
         description: "Dev Branch name to clean"
         required: true
         type: string
-      approve:
-        description: "Type 'YES' to confirm cleanup"
-        required: true
-        type: string
 
 jobs:
   cleanup-stage:
