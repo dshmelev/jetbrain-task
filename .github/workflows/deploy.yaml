@@ -220,4 +220,3 @@ jobs:
              --set image.repository=${{ env.IMAGE_REPO }} \
              --set image.tag=${{ env.IMAGE_TAG }} \
              -f charts/values-prod.yaml
-           
