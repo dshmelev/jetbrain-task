@@ -1,4 +1,4 @@
-name: Jetbrains Devops task
+name: JetBrains Devops task
 
 on:
   push:
