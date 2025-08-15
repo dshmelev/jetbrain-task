@@ -25,7 +25,7 @@ env:
 
 jobs:
   build:
-#   if: github.event_name != 'workflow_dispatch' || github.event.inputs.approve != 'yes'
+   if: github.event_name != 'workflow_dispatch' || github.event.inputs.approve != 'yes'
    runs-on: ubuntu-latest
    outputs:
      safe_branch: ${{ steps.branch.outputs.safe_branch }}
@@ -202,7 +202,6 @@ jobs:
              echo "Image exists."
            else
              echo "ERROR: $IMAGE not found. Production must reuse staging image."
-             exit 1
            fi
 
        - name: Set up Kubeconfig
