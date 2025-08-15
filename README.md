@@ -28,7 +28,7 @@ The workflow (`.github/workflows/deploy.yml`) automates:
 | Event Type              | Branch Pattern             | Action Taken                  |
 |-------------------------|----------------------------|--------------------------------|
 | **Push**                | `feature/**`, `dev/**`     | Build & deploy to **Dev**     |
-| **Pull Request Closed** | Target = `stage`            | Build, scan, deploy to **Staging** |
+| **Pull Request Opened** | Target = `stage`            | Build, scan, deploy to **Staging** |
 | **Manual Dispatch**     | _n/a_                       | Deploy to **Production** (with approval) |
 
 ---
