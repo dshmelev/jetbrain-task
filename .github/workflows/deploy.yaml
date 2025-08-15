@@ -28,7 +28,7 @@ env:
 
 jobs:
   build:
-   if: github.event_name != 'workflow_dispatch' || github.event.inputs.approve != 'yes'
+#   if: github.event_name != 'workflow_dispatch' || github.event.inputs.approve != 'yes'
    runs-on: ubuntu-latest
    outputs:
      safe_branch: ${{ steps.branch.outputs.safe_branch }}
@@ -153,14 +153,14 @@ jobs:
 
          - name: Deploy to Staging
            run: |
-            echo "Deploying image: ${{ env.REGISTRY }}:${{ env.IMAGE_TAG }} to  ns ${{ env.STAGE_NS }}"
+            echo "Deploying image: ${{ env.REGISTRY }} ${{ env.IMAGE_TAG }} to  ns ${{ env.STAGE_NS }}"
 
             helm upgrade --install my-app ./charts \
             --namespace ${{ env.STAGE_NS}} \
             --set image.repository=${{ env.IMAGE_REPO }} \
             --set image.tag=${IMAGE_TAG} \
             -f charts/values-stage.yaml
-
+             
 #         - name: Run smoke tests
 #           run: |
 #             kubectl -n staging port-forward svc/my-service-stage 80:80 &
