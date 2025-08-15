@@ -1,55 +1,106 @@
 
 ---
 
-## 🚀 Pipeline Overview
+# Jetbrain DevOps Task – CI/CD Pipeline
 
-The pipeline (`deploy.yaml`) runs on:
-
-- **Pushes to `feature/**`** → Deploy to **Dev**
-- **Pushes to `stage`** → Deploy to **Staging**
-- **Pushes to `main`** → Deploy to **Production** (manual approval required)
-
-You can also trigger it manually with **workflow_dispatch**.
+This repository contains a **GitHub Actions** pipeline for building, scanning, and deploying a Dockerized application to **Dev**, **Staging**, and **Production** Kubernetes environments using **Helm**.
 
 ---
 
-## 🔄 Workflow Stages
+## 📋 Pipeline Overview
 
-### 1️⃣ Build and Push Image
-- **Checkout code**
-- **Set up QEMU + Buildx** for multi-platform builds
-- **Login to GHCR** (GitHub Container Registry)
-- **Check if image already exists** in GHCR by SHA (skip rebuild if present)
-- **Build & push Docker image** with:
-    - `dev-<branch>-<sha>` tag
-    - `<sha>` tag (used for staging and prod)
-- **Scan image** using [Trivy](https://github.com/aquasecurity/trivy)  
-  Blocks pipeline on **HIGH/CRITICAL** vulnerabilities.
+The workflow (`.github/workflows/pipeline.yml`) automates:
 
----
-
-### 2️⃣ Deploy to Dev
-- Triggered on pushes to `feature/**`
-- Creates namespace `dev-<branch>` dynamically
-- Deploys with `values-dev.yaml`
-- Used for short-lived feature testing  
-  *(namespace can be deleted after testing via `kubectl delete ns dev-<branch>`)*
+- **Docker Image Build & Push** → Builds multi-platform images and pushes to **GitHub Container Registry (GHCR)**.
+- **Environment Deployments**:
+  - **Dev** → Auto-deploys feature/dev branches to dynamic namespaces.
+  - **Staging** → Deploys `stage` branch image with Trivy vulnerability scanning.
+  - **Production** → Manually approved deployment reusing the staging image.
+- **Security & Safety**:
+  - Vulnerability scan before staging deploy.
+  - Manual approval required for production.
+  - Concurrency control to prevent simultaneous prod deployments.
 
 ---
 
-### 3️⃣ Deploy to Staging
-- Triggered on pushes to `stage`
-- Uses SHA-only tag (no rebuild)
-- Deploys with `values-stage.yaml` to fixed `staging` namespace
+## 🚀 Trigger Rules
+
+| Event Type              | Branch Pattern             | Action Taken                  |
+|-------------------------|----------------------------|--------------------------------|
+| **Push**                | `feature/**`, `dev/**`     | Build & deploy to **Dev**     |
+| **Pull Request Closed** | Target = `stage`            | Build, scan, deploy to **Staging** |
+| **Manual Dispatch**     | _n/a_                       | Deploy to **Production** (with approval) |
 
 ---
 
-### 4️⃣ Deploy to Production
-- Triggered on pushes to `main`
-- **Manual approval step** before deployment
-- Uses `values-prod.yaml` and fixed `production` namespace
-- Prevents concurrent prod deployments via `concurrency: production`
+## 🛠 Job Descriptions
 
+### **1. build**
+- Runs on push/PR (except prod deploy).
+- Builds & pushes Docker images.
+- Tags:
+  - Dev: `dev-{safe-branch}-{commit-sha}`
+  - Staging: `{commit-sha}`
+
+### **2. deploy-dev**
+- Deploys dev images to **`dev-{safe-branch}`** namespace.
+- Uses Helm values from `charts/values-dev.yaml`.
+
+### **3. deploy-staging**
+- Deploys staging image to `staging` namespace.
+- Runs **Trivy** scan (CRITICAL & HIGH).
+- Publishes scan results to GitHub job summary.
+- Uses Helm values from `charts/values-stage.yaml`.
+
+### **4. deploy-production**
+- Triggered manually with `workflow_dispatch`.
+- Inputs:
+  - `approve` → must be `"YES"/"yes"`
+  - `image_tag` → SHA tag from staging build.
+- Manual approval step before deployment.
+- Verifies image exists in GHCR before deploy.
+- Uses Helm `--atomic` to rollback on failure.
+- Publishes Helm status to GitHub job summary.
+
+---
+
+## 🖥 Manual Production Deployment
+
+1. Go to **Actions** tab in GitHub.
+2. Select **jetbrain devops task** workflow.
+3. Click **Run workflow** → choose branch.
+4. Fill in:
+  - **approve** → `YES`
+  - **image_tag** → SHA from staging deployment.
+5. Approve deployment via the GitHub Issue created by the workflow.
+
+---
+
+## 📦 Image Tag Format
+
+| Environment | Example Tag                                         |
+|-------------|------------------------------------------------------|
+| Dev         | `dev-feature-loginfix-a1b2c3d4`                      |
+| Staging     | `a1b2c3d4e5f6g7h8i9j0`                               |
+| Production  | Uses the staging tag provided in manual input        |
+
+---
+
+## 🔒 Required Secrets
+
+| Secret Name               | Purpose                                   |
+|---------------------------|-------------------------------------------|
+| `GITHUB_TOKEN`            | GHCR authentication & GitHub API actions |
+| `KUBECONFIG_CONTENT`      | Base64 kubeconfig for target clusters     |
+
+---
+
+## ⚠ Safeguards
+
+- **Concurrency Lock** → Only one production deploy at a time.
+- **Image Existence Check** → Prevents deploying missing images.
+- **Trivy Scanning** → Detects critical/high vulnerabilities.
+- **Helm `--atomic`** → Automatic rollback on deployment failure.
 ---
 
 ## 🛠 Managing Test Namespaces
