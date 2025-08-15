@@ -163,7 +163,7 @@ jobs:
              
          - name: Run smoke tests
            run: |
-             kubectl -n staging port-forward svc/my-service-stage 80:80 &
+             sudo kubectl -n staging port-forward svc/my-service-stage 80:80 &
              sleep 5
              curl -f http://127.0.0.1:80/
 ################################################# Production ###############################################################################################
