@@ -101,37 +101,6 @@ jobs:
                --set image.repository=${{ env.IMAGE_REPO }} \
                --set image.tag=${IMAGE_TAG} \
                -f charts/values-dev.yaml
-############################################## Cleanup NS ###############################################
-
-  cleanup-stage:
-    if: github.event_name == 'workflow_dispatch'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Compute safe branch
-        id: branch
-        run: |
-          BRANCH="${{ github.event.inputs.branch_name }}"
-          SAFE_BRANCH=$(echo "$BRANCH" | tr '[:upper:]' '[:lower:]' \
-                        | sed 's#[/_]#-#g' | sed 's#[^a-z0-9-]##g')
-          echo "safe_branch=$SAFE_BRANCH" >> $GITHUB_OUTPUT  
-
-      - name: Set up Kubeconfig
-        run: |
-          mkdir -p ~/.kube
-          echo "${{ secrets.KUBECONFIG_CONTENT }}" | base64 -d > ~/.kube/config
-          chmod 600 ~/.kube/config
-
-      - name: Delete namespace
-        run: |
-          NS="dev-${{ steps.branch.outputs.safe_branch }}"
-          echo "Deleting namespace: $NS"
-          kubectl delete namespace "$NS" --wait || echo "Namespace $NS not found"
-
-      - name: Summary
-        run: |
-          echo "## Stage Cleanup" >> $GITHUB_STEP_SUMMARY
-          echo "**Branch:** ${{ github.event.inputs.branch_name }}" >> $GITHUB_STEP_SUMMARY
-          echo "**Namespace deleted:** dev-${{ steps.branch.outputs.safe_branch }}" >> $GITHUB_STEP_SUMMARY
 ############################################### Stage #################################################################################################
 
   deploy-staging:
@@ -192,7 +161,7 @@ jobs:
 ################################################# Production ###############################################################################################
 
   deploy-production:
-     if: github.event_name == 'workflow_dispatch'
+     if: github.event_name == 'workflow_dispatch' && github.ref != 'refs/heads/main'
      runs-on: ubuntu-latest
      permissions:
       issues: write
