@@ -14,6 +14,9 @@ on:
       approve:
         description: "Type 'YES' to confirm production"
         required: true
+      image_tag:
+        description: "Staging image tag to Deploy"
+        required: true
 
 permissions: #This gives the repo’s GITHUB_TOKEN the rights to push to GHCR from Actions.
   contents: read
@@ -157,7 +160,7 @@ jobs:
             --set image.repository=${{ env.IMAGE_REPO }} \
             --set image.tag=${IMAGE_TAG} \
             -f charts/values-stage.yaml
-             
+
 #         - name: Run smoke tests
 #           run: |
 #             kubectl -n staging port-forward svc/my-service-stage 80:80 &
@@ -172,8 +175,7 @@ jobs:
       issues: write
      concurrency: production  # Prevent multiple prod deploys at same time
      env:
-       IMAGE_TAG: ${{ github.sha }}
-
+      IMAGE_TAG: ${{ github.event.inputs.image_tag }}  # <-- Use input
      steps:
        - name: Await Manual Approval
          uses: trstringer/manual-approval@v1
