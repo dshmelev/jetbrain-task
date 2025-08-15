@@ -5,8 +5,15 @@ on:
     branches:
       - 'feature/**'
       - 'dev/**'
+  pull_request:
+    types: [ closed ]
+    branches:
       - 'stage'
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      approve:
+        description: "Type 'YES' to confirm production"
+        required: true
 
 permissions: #This gives the repo’s GITHUB_TOKEN the rights to push to GHCR from Actions.
   contents: read
@@ -153,15 +160,16 @@ jobs:
              
 #         - name: Run smoke tests
 #           run: |
-#             kubectl -n staging port-forward svc/my-service-stage 8080:8000 &
+#             kubectl -n staging port-forward svc/my-service-stage 80:80 &
 #             sleep 5
-#             curl -f http://127.0.0.1:8080/
+#             curl -f http://127.0.0.1:80/
 ################################################# Production ###############################################################################################
 
   deploy-production:
-     needs: deploy-staging
-     if: github.ref == 'refs/heads/stage'
+     if: github.event_name == 'workflow_dispatch'
      runs-on: ubuntu-latest
+     permissions:
+      issues: write
      concurrency: production  # Prevent multiple prod deploys at same time
      env:
        IMAGE_TAG: ${{ github.sha }}
