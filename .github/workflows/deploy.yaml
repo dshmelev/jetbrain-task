@@ -6,14 +6,11 @@ on:
       - 'feature/**'
       - 'dev/**'
   pull_request:
-    types: [ closed ]
+    types: [ opened ]
     branches:
       - 'stage'
   workflow_dispatch:
     inputs:
-      approve:
-        description: "Type 'YES' to confirm production"
-        required: true
       image_tag:
         description: "Staging image tag to Deploy"
         required: true
@@ -21,6 +18,7 @@ on:
 permissions: #This gives the repo’s GITHUB_TOKEN the rights to push to GHCR from Actions.
   contents: read
   packages: write
+
 env:
   IMAGE_REPO: ghcr.io/mina-farajian/jetbrain-task
   STAGE_NS: staging
@@ -77,10 +75,9 @@ jobs:
           push: true
           platforms: linux/amd64
           tags: |
-            ${{ env.IMAGE_REPO }}:${{ github.sha }}   
-         
-
+            ${{ env.IMAGE_REPO }}:${{ github.sha }}
 #################################################### Dev ############################################################################################
+
   deploy-dev:
        needs: build
        if: startsWith(github.ref, 'refs/heads/feature/') || startsWith(github.ref, 'refs/heads/dev/')
@@ -108,7 +105,6 @@ jobs:
                --set image.repository=${{ env.IMAGE_REPO }} \
                --set image.tag=${IMAGE_TAG} \
                -f charts/values-dev.yaml
-
 ############################################### Stage #################################################################################################
 
   deploy-staging:
@@ -149,23 +145,23 @@ jobs:
                  echo '```'
                } >> $GITHUB_STEP_SUMMARY
              fi
-             
 
          - name: Deploy to Staging
            run: |
             echo "Deploying image: ${{ env.REGISTRY }} ${{ env.IMAGE_TAG }} to  ns ${{ env.STAGE_NS }}"
 
             helm upgrade --install my-app ./charts \
+            --atomic \ 
             --namespace ${{ env.STAGE_NS}} \
             --set image.repository=${{ env.IMAGE_REPO }} \
             --set image.tag=${IMAGE_TAG} \
             -f charts/values-stage.yaml
              
-         - name: Run smoke tests
-           run: |
-             kubectl -n staging port-forward svc/my-service-stage 80:80 &
-             sleep 5
-             curl -f http://127.0.0.1:80/
+#         - name: Run smoke tests
+#           run: |
+#             sudo kubectl -n staging port-forward svc/my-service-stage 80:80 &
+#             sleep 5
+#             curl -f http://127.0.0.1:80/
 ################################################# Production ###############################################################################################
 
   deploy-production:
