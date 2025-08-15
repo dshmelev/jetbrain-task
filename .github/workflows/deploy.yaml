@@ -233,4 +233,3 @@ jobs:
             echo '```' >> $GITHUB_STEP_SUMMARY
             helm status my-app --namespace ${{ env.PROD_NS }} >> $GITHUB_STEP_SUMMARY
             echo '```' >> $GITHUB_STEP_SUMMARY
-    
