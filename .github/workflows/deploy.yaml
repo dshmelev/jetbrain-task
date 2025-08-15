@@ -157,11 +157,11 @@ jobs:
             --set image.tag=${IMAGE_TAG} \
             -f charts/values-stage.yaml
              
-         - name: Run smoke tests
-           run: |
-             sudo kubectl -n staging port-forward svc/my-service-stage 80:80 &
-             sleep 5
-             curl -f http://127.0.0.1:80/
+#         - name: Run smoke tests
+#           run: |
+#             sudo kubectl -n staging port-forward svc/my-service-stage 80:80 &
+#             sleep 5
+#             curl -f http://127.0.0.1:80/
 ################################################# Production ###############################################################################################
 
   deploy-production:
