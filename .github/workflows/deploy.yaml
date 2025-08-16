@@ -208,7 +208,7 @@ jobs:
 
        - name: Deploy to Production with Helm
          run: |
-           echo "Deploying image: ${{ env.IMAGE_REPO }}/staging-latest to ${{ env.PROD_NS }}"
+#           echo "Deploying image: ${{ env.IMAGE_REPO }}/${{ env.IMAGE_TAG }} to ${{ env.PROD_NS }}"
 #           IMAGE_TAG="${{ needs.deploy-staging.outputs.image_tag }}"
            
            helm upgrade --install my-app ./charts\
