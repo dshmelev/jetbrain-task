@@ -91,8 +91,16 @@ jobs:
              echo "${{ secrets.KUBECONFIG_CONTENT }}" | base64 -d > ~/.kube/config
              chmod 600 ~/.kube/config
 
+         - name: Bump version and push tag
+           id: tag_version
+           uses: mathieudutour/github-tag-action@v6.2
+           with:
+             github_token: ${{ secrets.GITHUB_TOKEN }}
+
          - name: Deploy to Dev with Helm (dynamic)
            run: |
+             VERSION=${{ steps.tag_version.outputs.new_tag }}
+             echo $VERSION
              echo "Deploying ${{ env.IMAGE_REPO }}:${{ env.IMAGE_TAG }} to ns $NAMESPACE"
              
              helm upgrade --install my-app ./charts \
@@ -100,6 +108,7 @@ jobs:
                --create-namespace \
                --set image.repository=${{ env.IMAGE_REPO }} \
                --set image.tag=${IMAGE_TAG} \
+               --set appVersion=$VERSION \
                -f charts/values-dev.yaml
 ############################################### Stage #################################################################################################
 
