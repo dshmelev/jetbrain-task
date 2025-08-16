@@ -4,7 +4,7 @@ namespace: production
 name: my-nginx-prod
 image:
   repository: ghcr.io/mina-farajian/jetbrain-task
-  tag:
+  pullPolicy: IfNotPresent
 resources:
    limits:
      cpu: 500m
