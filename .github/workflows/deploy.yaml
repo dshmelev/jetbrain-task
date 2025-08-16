@@ -151,7 +151,7 @@ jobs:
             --atomic \ 
             --namespace ${{ env.STAGE_NS}} \
             --set image.repository=${{ env.IMAGE_REPO }} \
-            --set image.tag=${IMAGE_TAG} \
+            --set image.tag=${{ env.IMAGE_TAG }} \
             -f charts/values-stage.yaml
              
 #         - name: Run smoke tests
