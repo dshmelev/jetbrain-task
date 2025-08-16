@@ -105,7 +105,7 @@ jobs:
                --create-namespace \
                --set image.repository=${{ env.IMAGE_REPO }} \
                --set image.tag=${IMAGE_TAG} \
-               --set app.version=${APP_VERSION} \
+               --set app.version=${{ env.APP_VERSION }} \
                -f charts/values-dev.yaml
 ############################################### Stage #################################################################################################
 
