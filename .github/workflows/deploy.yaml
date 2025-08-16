@@ -205,7 +205,6 @@ jobs:
            mkdir -p ~/.kube
            echo "${{ secrets.KUBECONFIG_CONTENT }}" | base64 -d > ~/.kube/config
            chmod 600 ~/.kube/config
-
        - name: Deploy to Production with Helm
          run: |
            echo "Deploying image: ${{ env.IMAGE_REPO }}/staging-latest to ${{ env.PROD_NS }}"
