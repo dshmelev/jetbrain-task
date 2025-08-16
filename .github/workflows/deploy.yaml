@@ -107,6 +107,8 @@ jobs:
      needs: build
      if: github.ref == 'refs/heads/stage'
      runs-on: ubuntu-latest
+     outputs:
+       image_tag: ${{ env.IMAGE_TAG }}
      env:
       IMAGE_TAG: ${{ github.sha }}
       NAMESPACE: staging
@@ -162,12 +164,14 @@ jobs:
 
   deploy-production:
      if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
+     needs: deploy-staging
      runs-on: ubuntu-latest
      permissions:
       issues: write
      concurrency: production  # Prevent multiple prod deploys at same time
      env:
-      IMAGE_TAG: ${{ github.event.inputs.image_tag }}  # <-- Use input
+      IMAGE_TAG: "${{ env.IMAGE_REPO }}:${{ needs.deploy-staging.outputs.image-tag }}"
+     # IMAGE_TAG: ${{ github.event.inputs.image_tag }}  # <-- Use input
      steps:
        - name: Await Manual Approval
          uses: trstringer/manual-approval@v1
@@ -190,7 +194,7 @@ jobs:
 
        - name: Verify the staging image exists (no rebuild)
          run: |
-           IMAGE="${{ env.IMAGE_REPO }}:${{ env.IMAGE_TAG }}"
+           IMAGE="${{ env.IMAGE_TAG }}"
            echo "Checking $IMAGE"
            if docker manifest inspect "$IMAGE" >/dev/null 2>&1; then
              echo "Image exists."
