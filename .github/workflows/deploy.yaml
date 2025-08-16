@@ -209,13 +209,12 @@ jobs:
        - name: Deploy to Production with Helm
          run: |
            echo "Deploying image: ${{ env.IMAGE_REPO }}/staging-latest to ${{ env.PROD_NS }}"
-#           IMAGE_TAG="${{ needs.deploy-staging.outputs.image_tag }}"
            
            helm upgrade --install my-app ./charts \
              --atomic \
              --namespace ${{ env.PROD_NS}} \
              --set image.repository=${{ env.IMAGE_REPO }} \
-             --set image.tag="staging-latest" \
+             --set image.tag=staging-latest \
              -f charts/values-prod.yaml
            
        - name: Write to job summary
