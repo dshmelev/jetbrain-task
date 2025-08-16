@@ -153,12 +153,16 @@ jobs:
             --set image.tag=${{ env.IMAGE_TAG }} \
             -f charts/values-stage.yaml
              
-         - name: Patch values-prod.yaml with staging image tag
-           run: |
-             yq -i '.image.tag = env(IMAGE_TAG)' charts/values-prod.yaml
-             echo "Updated values-prod.yaml with tag ${{ env.IMAGE_TAG }}"
+         - name: Save image tag as artifact
+           run: echo "${{ env.IMAGE_TAG }}" > production_image_tag.txt
 
-  #             sed -i "s|tag:.*|tag: \"${{ env.IMAGE_TAG }}\"|" charts/values-prod.yaml
+         - name: Upload artifact
+           uses: actions/upload-artifact@v4
+           with:
+             name: production-image-tag
+             path: production_image_tag.txt
+
+  #
 #         - name: Run smoke tests
 #           run: |
 #             sudo kubectl -n staging port-forward svc/my-service-stage 80:80 &
@@ -192,16 +196,29 @@ jobs:
            username: ${{ github.actor }}
            password: ${{ secrets.GITHUB_TOKEN }}
 
-       - name: Verify the staging image exists (no rebuild)
+       - name: Download production image tag artifact
+         uses: actions/download-artifact@v4
+         with:
+           name: production-image-tag
+           path: .
+
+       - name: Set production image tag from artifact
+         id: set-tag
          run: |
-           IMAGE_TAG=$(yq '.image.tag' charts/values-prod.yaml)
-           IMAGE="${{ env.IMAGE_REPO }}:${IMAGE_TAG}"
-           echo "Checking $IMAGE"
-           if docker manifest inspect "$IMAGE" >/dev/null 2>&1; then
-           echo "Image exists."
-           else
-           echo "ERROR: $IMAGE not found. Production must reuse staging image."
-           fi
+           IMAGE_TAG=$(cat production_image_tag.txt)
+           echo "Using image tag: $IMAGE_TAG"
+           echo "image-tag=$IMAGE_TAG" >> $GITHUB_OUTPUT
+
+#       - name: Verify the staging image exists (no rebuild)
+#         run: |
+#           IMAGE_TAG=$(yq '.image.tag' charts/values-prod.yaml)
+#           IMAGE="${{ env.IMAGE_REPO }}:${IMAGE_TAG}"
+#           echo "Checking $IMAGE"
+#           if docker manifest inspect "$IMAGE" >/dev/null 2>&1; then
+#           echo "Image exists."
+#           else
+#           echo "ERROR: $IMAGE not found. Production must reuse staging image."
+#           fi
 
        - name: Set up Kubeconfig
          run: |
@@ -211,18 +228,18 @@ jobs:
 
        - name: Deploy to Production with Helm
          run: |
-           IMAGE_TAG=$(yq '.image.tag' charts/values-prod.yaml)
-           echo "Deploying image: ${{ env.IMAGE_REPO }}:${IMAGE_TAG} to ${{ env.PROD_NS }}"
+           echo "Deploying image: ${{ env.IMAGE_REPO }}:${{ steps.set-tag.outputs.image-tag }} to ${{ env.PROD_NS }}"
            
            helm upgrade --install my-app ./charts \
              --atomic \
+             --set image.tag=${{ steps.set-tag.outputs.image-tag }} \
              -f charts/values-prod.yaml
            
        - name: Write to job summary
          run: |
             echo "## Deployment Summary" >> $GITHUB_STEP_SUMMARY
             echo "**Environment:** Production" >> $GITHUB_STEP_SUMMARY
-            echo "**Image:** ghcr.io/mina-farajian/jetbrain-task:${IMAGE_TAG}" >> $GITHUB_STEP_SUMMARY
+            echo "**Image:** ghcr.io/mina-farajian/jetbrain-task:${{ steps.set-tag.outputs.image-tag }}" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
             echo "### Helm Status" >> $GITHUB_STEP_SUMMARY
             echo '```' >> $GITHUB_STEP_SUMMARY
