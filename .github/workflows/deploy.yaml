@@ -217,7 +217,7 @@ jobs:
              --atomic \
              --namespace ${{ env.PROD_NS}} \
              --set image.repository=${{ env.IMAGE_REPO }} \
-             --set image.tag=${{ IMAGE_TAG }} \
+             --set image.tag=$IMAGE_TAG \
              -f charts/values-prod.yaml
            
        - name: Write to job summary
