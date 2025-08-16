@@ -36,7 +36,10 @@ jobs:
          BRANCH="${GITHUB_REF_NAME}"
          SAFE_BRANCH=$(echo "$BRANCH" | tr '[:upper:]' '[:lower:]' \
                        | sed 's#[/_]#-#g' | sed 's#[^a-z0-9-]##g')
-         echo "safe_branch=$SAFE_BRANCH" >> $GITHUB_OUTPUT  
+         echo "safe_branch=$SAFE_BRANCH" >> $GITHUB_OUTPUT
+         APP_VERSION="${SAFE_BRANCH}-${GITHUB_RUN_NUMBER}"
+         sed -i "s/^appVersion:.*/appVersion: \"$APP_VERSION\"/" charts/Chart.yaml
+         echo "APP_VERSION=$APP_VERSION" >> $GITHUB_ENV
 
      - name: Set up QEMU (for cross-platform builds)
        uses: docker/setup-qemu-action@v2
@@ -91,12 +94,6 @@ jobs:
              echo "${{ secrets.KUBECONFIG_CONTENT }}" | base64 -d > ~/.kube/config
              chmod 600 ~/.kube/config
 
-         - name: Bump version and push tag
-           id: tag_version
-           uses: mathieudutour/github-tag-action@v6.2
-           with:
-             github_token: ${{ secrets.GITHUB_TOKEN }}
-
          - name: Deploy to Dev with Helm (dynamic)
            run: |
              VERSION=${{ steps.tag_version.outputs.new_tag }}
@@ -108,7 +105,7 @@ jobs:
                --create-namespace \
                --set image.repository=${{ env.IMAGE_REPO }} \
                --set image.tag=${IMAGE_TAG} \
-               --set appVersion=$VERSION \
+               --set app.version=${APP_VERSION} \
                -f charts/values-dev.yaml
 ############################################### Stage #################################################################################################
 
