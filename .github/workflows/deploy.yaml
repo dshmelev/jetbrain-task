@@ -189,16 +189,16 @@ jobs:
            username: ${{ github.actor }}
            password: ${{ secrets.GITHUB_TOKEN }}
 
-#       - name: Verify the staging image exists (no rebuild)
-#         run: |
-#           IMAGE="${{ env.IMAGE_REPO }}:${{ needs.deploy-staging.outputs.image_tag }}"
-#           echo "Checking $IMAGE"
-#           if docker manifest inspect "$IMAGE" >/dev/null 2>&1; then
-#             echo "Image exists."
-#           else
-#             echo "ERROR: $IMAGE not found. Production must reuse staging image."
-#                exit 1
-#           fi
+       - name: Verify the staging image exists (no rebuild)
+         run: |
+           IMAGE="${{ env.IMAGE_REPO }}:staging-latest"
+           echo "Checking $IMAGE"
+           if docker manifest inspect "$IMAGE" >/dev/null 2>&1; then
+             echo "Image exists."
+           else
+             echo "ERROR: $IMAGE not found. Production must reuse staging image."
+                exit 1
+           fi
 
        - name: Set up Kubeconfig
          run: |
@@ -208,10 +208,10 @@ jobs:
 
        - name: Deploy to Production with Helm
          run: |
-#           echo "Deploying image: ${{ env.IMAGE_REPO }}/${{ env.IMAGE_TAG }} to ${{ env.PROD_NS }}"
+           echo "Deploying image: ${{ env.IMAGE_REPO }}/staging-latest to ${{ env.PROD_NS }}"
 #           IMAGE_TAG="${{ needs.deploy-staging.outputs.image_tag }}"
            
-           helm upgrade --install my-app ./charts\
+           helm upgrade --install my-app ./charts \
              --atomic \
              --namespace ${{ env.PROD_NS}} \
              --set image.repository=${{ env.IMAGE_REPO }} \
