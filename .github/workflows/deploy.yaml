@@ -157,7 +157,7 @@ jobs:
            run: echo "${{ env.IMAGE_TAG }}" > production_image_tag.txt
 
          - name: Upload artifact
-           uses: actions/upload-artifact@v3
+           uses: actions/upload-artifact@v4
            with:
              name: production-image-tag
              path: production_image_tag.txt
@@ -197,7 +197,7 @@ jobs:
            password: ${{ secrets.GITHUB_TOKEN }}
 
        - name: Download production image tag artifact
-         uses: actions/download-artifact@v3
+         uses: actions/download-artifact@v4
          with:
            name: production-image-tag
            path: .
