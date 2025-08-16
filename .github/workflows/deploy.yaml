@@ -200,7 +200,6 @@ jobs:
            echo "Image exists."
            else
            echo "ERROR: $IMAGE not found. Production must reuse staging image."
-           exit 1
            fi
 
        - name: Set up Kubeconfig

@@ -1,6 +1,6 @@
 Deployment:
 replicaCount: 1
-namespace: prod
+namespace: production
 name: my-nginx-prod
 image:
   repository: ghcr.io/mina-farajian/jetbrain-task
