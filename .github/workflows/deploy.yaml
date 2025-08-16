@@ -170,7 +170,7 @@ jobs:
       issues: write
      concurrency: production  # Prevent multiple prod deploys at same time
      env:
-      IMAGE_TAG: "${{ env.IMAGE_REPO }}:${{ needs.deploy-staging.outputs.image-tag }}"
+       IMAGE_TAG: "${{ env.IMAGE_REPO }}:${{ needs.deploy-staging.outputs.image-tag }}"
      # IMAGE_TAG: ${{ github.event.inputs.image_tag }}  # <-- Use input
      steps:
        - name: Await Manual Approval
