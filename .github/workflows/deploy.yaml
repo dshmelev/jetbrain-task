@@ -156,9 +156,9 @@ jobs:
          - name: Patch values-prod.yaml with staging image tag
            run: |
              yq -i '.image.tag = env(IMAGE_TAG)' charts/values-prod.yaml
-#             sed -i "s|tag:.*|tag: \"${{ env.IMAGE_TAG }}\"|" charts/values-prod.yaml
              echo "Updated values-prod.yaml with tag ${{ env.IMAGE_TAG }}"
 
+  #             sed -i "s|tag:.*|tag: \"${{ env.IMAGE_TAG }}\"|" charts/values-prod.yaml
 #         - name: Run smoke tests
 #           run: |
 #             sudo kubectl -n staging port-forward svc/my-service-stage 80:80 &
