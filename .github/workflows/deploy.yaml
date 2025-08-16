@@ -6,7 +6,7 @@ on:
       - 'feature/**'
       - 'dev/**'
   pull_request:
-    types: [ opened ]
+    types: [ closed ]
     branches:
       - 'stage'
   workflow_dispatch: {}
