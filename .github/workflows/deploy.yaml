@@ -36,7 +36,7 @@ jobs:
          BRANCH="${GITHUB_REF_NAME}"
          SAFE_BRANCH=$(echo "$BRANCH" | tr '[:upper:]' '[:lower:]' \
                        | sed 's#[/_]#-#g' | sed 's#[^a-z0-9-]##g')
-         echo "safe_branch=$SAFE_BRANCH" >> $GITHUB_OUTPUT  
+         echo "safe_branch=$SAFE_BRANCH" >> $GITHUB_OUTPUT
 
      - name: Set up QEMU (for cross-platform builds)
        uses: docker/setup-qemu-action@v2
@@ -72,6 +72,7 @@ jobs:
           platforms: linux/amd64
           tags: |
             ${{ env.IMAGE_REPO }}:${{ github.sha }}
+            ${{ env.IMAGE_REPO }}:staging-latest
 #################################################### Dev ############################################################################################
 
   deploy-dev:
@@ -166,8 +167,8 @@ jobs:
      permissions:
       issues: write
      concurrency: production  # Prevent multiple prod deploys at same time
-     env:
-      IMAGE_TAG: ${{ github.event.inputs.image_tag }}  # <-- Use input
+#     env:
+#     # IMAGE_TAG: ${{ github.event.inputs.image_tag }}  # <-- Use input
      steps:
        - name: Await Manual Approval
          uses: trstringer/manual-approval@v1
@@ -190,12 +191,13 @@ jobs:
 
        - name: Verify the staging image exists (no rebuild)
          run: |
-           IMAGE="${{ env.IMAGE_REPO }}:${{ env.IMAGE_TAG }}"
+           IMAGE="${{ env.IMAGE_REPO }}:staging-latest"
            echo "Checking $IMAGE"
            if docker manifest inspect "$IMAGE" >/dev/null 2>&1; then
              echo "Image exists."
            else
              echo "ERROR: $IMAGE not found. Production must reuse staging image."
+                exit 1
            fi
 
        - name: Set up Kubeconfig
@@ -206,13 +208,13 @@ jobs:
 
        - name: Deploy to Production with Helm
          run: |
-           echo "Deploying image: ${{ env.IMAGE_REPO }}/${{ env.IMAGE_TAG }} to ${{ env.PROD_NS }}"
-
-           helm upgrade --install my-app ./charts\
+           echo "Deploying image: ${{ env.IMAGE_REPO }}/staging-latest to ${{ env.PROD_NS }}"
+           
+           helm upgrade --install my-app ./charts \
              --atomic \
              --namespace ${{ env.PROD_NS}} \
              --set image.repository=${{ env.IMAGE_REPO }} \
-             --set image.tag=${{ env.IMAGE_TAG }} \
+             --set image.tag=staging-latest \
              -f charts/values-prod.yaml
            
        - name: Write to job summary
