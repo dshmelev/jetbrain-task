@@ -103,6 +103,7 @@ Project/
 ├── .github/
 │   └── workflows/
 │       └── deploy.yaml
+|       └── cleanup-stage.yml 
 ├── app/
 ├── charts/
 │   ├── templates/
