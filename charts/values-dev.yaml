@@ -1,7 +1,3 @@
-
-app:
-  version: "latest"
-
 Deployment:
 replicaCount: 1
 name: my-nginx-dev
