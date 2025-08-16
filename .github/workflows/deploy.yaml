@@ -94,8 +94,6 @@ jobs:
          - name: Deploy to Dev with Helm (dynamic)
            run: |
              echo "Deploying ${{ env.IMAGE_REPO }}:${{ env.IMAGE_TAG }} to ns $NAMESPACE"
-             APP_VERSION="${SAFE_BRANCH}-${GITHUB_RUN_NUMBER}"
-             sed -i "s/^appVersion:.*/appVersion: \"$APP_VERSION\"/" charts/Chart.yaml
              
              helm upgrade --install my-app ./charts \
                --namespace "$NAMESPACE" \
