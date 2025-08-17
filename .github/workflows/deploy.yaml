@@ -145,10 +145,10 @@ jobs:
 
          - name: Deploy to Staging
            run: |
-            echo "Deploying image: ${{ env.REGISTRY }} ${{ env.IMAGE_TAG }} to  ns ${{ env.STAGE_NS }}"
+            echo "Deploying image: ${{ env.IMAGE_REPO }} ${{ env.IMAGE_TAG }} to  ns ${{ env.STAGE_NS }}"
 
             helm upgrade --install my-app ./charts \
-            --atomic \
+            --atomic --wait --timeout 3m0s \
             --namespace ${{ env.STAGE_NS}} \
             --set image.repository=${{ env.IMAGE_REPO }} \
             --set image.tag=${{ env.IMAGE_TAG }} \
@@ -169,14 +169,14 @@ jobs:
       issues: write
      concurrency: production  # Prevent multiple prod deploys at same time
      steps:
-#       - name: Await Manual Approval
-#         uses: trstringer/manual-approval@v1
-#         with:
-#           secret: ${{ secrets.GITHUB_TOKEN }}
-#           approvers: Mina-Farajian
-#           minimum-approvals: 1
-#           issue-title: "Manual Approval Required for Production deploy"
-#           issue-body: "Please approve or deny the deployment."
+       - name: Await Manual Approval
+         uses: trstringer/manual-approval@v1
+         with:
+           secret: ${{ secrets.GITHUB_TOKEN }}
+           approvers: Mina-Farajian
+           minimum-approvals: 1
+           issue-title: "Manual Approval Required for Production deploy"
+           issue-body: "Please approve or deny the deployment."
 
        - name: Checkout repository
          uses: actions/checkout@v3
@@ -210,7 +210,7 @@ jobs:
            echo "Deploying image: ${{ env.IMAGE_REPO }}:staging-latest to ${{ env.PROD_NS }}"
            
            helm upgrade --install my-app ./charts \
-             --atomic  --wait --timeout 6m0s \
+             --atomic  --wait --timeout 5m0s \
              --set image.tag=staging-latest \
              --namespace=production  \
              -f charts/values-prod.yaml \
