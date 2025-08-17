@@ -1,4 +1,3 @@
-
 ---
 
 # Jetbrain DevOps Task – CI/CD Pipeline
@@ -44,30 +43,19 @@
 - **Manual Approval for Prod** → Human gate before production release.
 
 ---
+
 ## 🛠 Managing Test Namespaces
 
-To remove a Dev namespace after testing:
+Temporary namespaces are created for feature branches during **Dev deployments** (e.g., `dev-feature-loginfix`).  
+To keep the cluster clean, these namespaces should be deleted after testing.
 
-```bash
-Run cleanup-stage to delete test namespace
-```
----
+A dedicated workflow **`cleanup-stage.yml`** is provided:
 
-## overview
+- **Input:** Requires the branch name to clean.
+- **Action:** Deletes the matching `dev-<branch>` namespace if it exists.
+- **Safety:** Skips deletion on `main` and `stage` branches to prevent accidents.
 
-```
-Project/
-├── .github/
-│   └── workflows/
-│       └── deploy.yaml
-|       └── cleanup-stage.yml 
-├── app/
-├── charts/
-│   ├── templates/
-│   ├── Chart.yaml
-│   ├── values-dev.yaml
-│   ├── values-prod.yaml
-│   └── values-stage.yaml
-├── Dockerfile
-└── README.md
-```
+⚠️ **Caution:**  
+This action is **destructive**. Running the cleanup workflow with the wrong branch name will permanently delete the corresponding namespace.  
+Always double-check the branch name before running.
+
