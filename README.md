@@ -8,9 +8,7 @@
 1. Go to the **Actions** tab in GitHub.
 2. Select **jetbrain devops task** workflow.
 3. Click **Run workflow** on the `main` branch.
-4. Fill in:
-  - **approve** → `YES`
-5. The workflow will:
+4. The workflow will:
   - Verify that the `staging-latest` image exists.
   - Create a GitHub Issue for manual approval.
   - Wait for approval before deploying.
