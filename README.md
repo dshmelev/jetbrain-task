@@ -76,6 +76,8 @@ Always double-check the branch name before running.
 - Wait for approval before deploying.
 - Deploy the verified image to **Production** using Helm.
 
+---
+### Overview
 ```
 Project/
 ├── .github/
