@@ -1,21 +1,23 @@
 
----
-
 # Jetbrain DevOps Task – CI/CD Pipeline
 
-## 🖥 Manual Production Deployment
+## ⚙️ How the Workflow Works
 
-1. Go to the **Actions** tab in GitHub.
-2. Select **jetbrain devops task** workflow.
-3. Click **Run workflow** on the `main` branch.
-4. Fill in:
-  - **approve** → `YES`
-5. The workflow will:
-  - Verify that the `staging-latest` image exists.
-  - Create a GitHub Issue for manual approval.
-  - Wait for approval before deploying.
-  - Deploy the verified image to **Production** using Helm.
+- **Development Branches (`feature/*`, `dev/*`)**  
+  Every push builds a Docker image with a unique tag (`dev-branchname-sha`) and deploys it to a temporary namespace (`dev-<branch>`).
 
+- **Staging (`stage` branch)**  
+  When code is merged into staging, the pipeline reuses the built image, scans it for vulnerabilities (Trivy), and deploys it to the staging namespace.  
+  The staging image is always tagged as `staging-latest`.
+
+- **Production (`main` branch)**  
+  Production never builds a new image.  
+  Instead, it reuses the **staging-latest** tag that was already tested in staging, ensuring consistency between environments.  
+  Deployment requires manual approval through GitHub Issues.
+
+- **Cleanup Workflow**  
+  Temporary dev namespaces can be deleted manually by running the **cleanup-stage** workflow.  
+  ⚠️ Use with caution: it permanently deletes all resources in that namespace.
 ---
 
 ## 📦 Image Tag Format
@@ -46,23 +48,42 @@
 - **Manual Approval for Prod** → Human gate before production release.
 
 ---
+
 ## 🛠 Managing Test Namespaces
 
-To remove a Dev namespace after testing:
+Temporary namespaces are created for feature branches during **Dev deployments** (e.g., `dev-feature-loginfix`).  
+To keep the cluster clean, these namespaces should be deleted after testing.
 
-```bash
-Run cleanup-stage to delete test namespace
-```
+A dedicated workflow **`cleanup-stage.yml`** is provided:
+
+- **Input:** Requires the branch name to clean.
+- **Action:** Deletes the matching `dev-<branch>` namespace if it exists.
+- **Safety:** Skips deletion on `main` and `stage` branches to prevent accidents.
+
+⚠️ **Caution:**  
+This action is **destructive**. Running the cleanup workflow with the wrong branch name will permanently delete the corresponding namespace.  
+Always double-check the branch name before running.
+
 ---
+## 🖥 Manual Production Deployment
 
-## overview
+1. Go to the **Actions** tab in GitHub.
+2. Select **jetbrain devops task** workflow.
+3. Click **Run workflow** on the `main` branch.
+4. The workflow will:
+- Verify that the `staging-latest` image exists.
+- Create a GitHub Issue for manual approval.
+- Wait for approval before deploying.
+- Deploy the verified image to **Production** using Helm.
 
+---
+### Overview
 ```
 Project/
 ├── .github/
 │   └── workflows/
-│       └── deploy.yaml
-|       └── cleanup-stage.yml 
+│       ├── deploy.yaml
+│       └── cleanup-stage.yml 
 ├── app/
 ├── charts/
 │   ├── templates/
