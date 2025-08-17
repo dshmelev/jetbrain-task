@@ -82,15 +82,6 @@ This action is **destructive**. Running the cleanup workflow with the wrong bran
 Always double-check the branch name before running.
 
 ---
-## 🖥 Manual Production Deployment
-
-1. Go to **Actions → jetbrain devops task**.
-2. Select the `main` branch and click **Run workflow**.
-3. Provide the **SHA image tag** of the staging build (from last staging deploy).
-4. A GitHub Issue will be created requesting approval.
-5. Once approved, the workflow deploys that image to production.
-
----
 ### Overview
 ```
 Project/
