@@ -209,7 +209,7 @@ jobs:
          run: |          
            echo "Deploying image: ${{ env.IMAGE_REPO }}:staging-latest to ${{ env.PROD_NS }}"
            
-           helm upgrade --install my-app ./charts \
+           helm --install my-app ./charts \
              --atomic \
              --wait \
              --timeout 5m \
