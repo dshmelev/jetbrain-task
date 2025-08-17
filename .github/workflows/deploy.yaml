@@ -212,6 +212,7 @@ jobs:
            helm upgrade --install my-app ./charts \
              --atomic  --wait --timeout 6m0s \
              --set image.tag=staging-latest \
+             --namespace production --create-namespace \
              -f charts/values-prod.yaml \
            
        - name: Write to job summary
