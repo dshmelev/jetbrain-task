@@ -1,4 +1,3 @@
----
 
 # Jetbrain DevOps Task – CI/CD Pipeline
 
