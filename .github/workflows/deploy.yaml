@@ -167,7 +167,7 @@ jobs:
      runs-on: ubuntu-latest
      permissions:
       issues: write
-     concurrency: production  # Prevent multiple prod deploys at same time
+#     concurrency: production  # Prevent multiple prod deploys at same time
      steps:
 #       - name: Await Manual Approval
 #         uses: trstringer/manual-approval@v1
