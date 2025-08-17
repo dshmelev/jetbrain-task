@@ -213,7 +213,7 @@ jobs:
              --atomic \
              --wait \
              --timeout 5m \
-             -- set namespace=production \
+             --set namespace=production \
              --set image.tag=staging-latest \
              -f charts/values-prod.yaml \
              --force
