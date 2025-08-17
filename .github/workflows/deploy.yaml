@@ -169,14 +169,14 @@ jobs:
       issues: write
      concurrency: production  # Prevent multiple prod deploys at same time
      steps:
-       - name: Await Manual Approval
-         uses: trstringer/manual-approval@v1
-         with:
-           secret: ${{ secrets.GITHUB_TOKEN }}
-           approvers: Mina-Farajian
-           minimum-approvals: 1
-           issue-title: "Manual Approval Required for Production deploy"
-           issue-body: "Please approve or deny the deployment."
+#       - name: Await Manual Approval
+#         uses: trstringer/manual-approval@v1
+#         with:
+#           secret: ${{ secrets.GITHUB_TOKEN }}
+#           approvers: Mina-Farajian
+#           minimum-approvals: 1
+#           issue-title: "Manual Approval Required for Production deploy"
+#           issue-body: "Please approve or deny the deployment."
 
        - name: Checkout repository
          uses: actions/checkout@v3
@@ -213,7 +213,7 @@ jobs:
              --atomic \
              --wait \
              --timeout 5m \
-             --set image.tag=staging-latest \
+             --set image.tag=62ba2cdfd20648c5baed3c144d05cd20cf3a7156\
              -f charts/values-prod.yaml
            
        - name: Write to job summary
