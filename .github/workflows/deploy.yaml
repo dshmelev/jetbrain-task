@@ -5,6 +5,7 @@ on:
     branches:
       - 'feature/**'
       - 'dev/**'
+      - 'dev-*'
   pull_request:
     types: [ closed ]
     branches:
