@@ -59,7 +59,7 @@ A dedicated workflow **`cleanup-stage.yml`** is provided:
 This action is **destructive**. Running the cleanup workflow with the wrong branch name will permanently delete the corresponding namespace.  
 Always double-check the branch name before running.
 
-
+```text
 Project/
 ├── .github/
 │   └── workflows/
