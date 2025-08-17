@@ -213,7 +213,7 @@ jobs:
              --atomic \
              --wait \
              --timeout 5m \
-             --set image.tag=62ba2cdfd20648c5baed3c144d05cd20cf3a7156\
+             --set image.tag=staging-latest \
              -f charts/values-prod.yaml
            
        - name: Write to job summary
