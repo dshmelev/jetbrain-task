@@ -3,60 +3,18 @@
 
 # Jetbrain DevOps Task – CI/CD Pipeline
 
-This repository contains a **GitHub Actions** pipeline for building, scanning, and deploying a Dockerized application to **Dev**, **Staging**, and **Production** Kubernetes environments using **Helm**.
-
----
-
-## 🚀 Trigger Rules
-
-| Event Type              | Branch Pattern             | Action Taken                  |
-|-------------------------|----------------------------|--------------------------------|
-| **Push**                | `feature/**`, `dev/**`     | Build & deploy to **Dev**     |
-| **Pull Request Opened** | Target = `stage`            | Build, scan, deploy to **Staging** |
-| **Manual Dispatch**     | _n/a_                       | Deploy to **Production** (with approval) |
-
----
-
-## 🛠 Job Descriptions
-
-### **1. build**
-- Runs on push/PR (except prod deploy).
-- Builds & pushes Docker images.
-- Tags:
-  - Dev: `dev-{safe-branch}-{commit-sha}`
-  - Staging: `{commit-sha}`
-
-### **2. deploy-dev**
-- Deploys dev images to **`dev-{safe-branch}`** namespace.
-- Uses Helm values from `charts/values-dev.yaml`.
-
-### **3. deploy-staging**
-- Deploys staging image to `staging` namespace.
-- Runs **Trivy** scan (CRITICAL & HIGH).
-- Publishes scan results to GitHub job summary.
-- Uses Helm values from `charts/values-stage.yaml`.
-
-### **4. deploy-production**
-- Triggered manually with `workflow_dispatch`.
-- Inputs:
-  - `approve` → must be `"YES"/"yes"`
-  - `image_tag` → SHA tag from staging build.
-- Manual approval step before deployment.
-- Verifies image exists in GHCR before deploy.
-- Uses Helm `--atomic` to rollback on failure.
-- Publishes Helm status to GitHub job summary.
-
----
-
 ## 🖥 Manual Production Deployment
 
-1. Go to **Actions** tab in GitHub.
+1. Go to the **Actions** tab in GitHub.
 2. Select **jetbrain devops task** workflow.
-3. Click **Run workflow** → choose branch.
+3. Click **Run workflow** on the `main` branch.
 4. Fill in:
   - **approve** → `YES`
-  - **image_tag** → SHA from staging deployment.
-5. Approve deployment via the GitHub Issue created by the workflow.
+5. The workflow will:
+  - Verify that the `staging-latest` image exists.
+  - Create a GitHub Issue for manual approval.
+  - Wait for approval before deploying.
+  - Deploy the verified image to **Production** using Helm.
 
 ---
 
@@ -65,8 +23,8 @@ This repository contains a **GitHub Actions** pipeline for building, scanning, a
 | Environment | Example Tag                                         |
 |-------------|------------------------------------------------------|
 | Dev         | `dev-feature-loginfix-a1b2c3d4`                      |
-| Staging     | `a1b2c3d4e5f6g7h8i9j0`                               |
-| Production  | Uses the staging tag provided in manual input        |
+| Staging     | `a1b2c3d4e5f6g7h8i9j0`, `staging-latest`             |
+| Production  | `staging-latest` (reuses staging image)              |
 
 ---
 
@@ -83,16 +41,17 @@ This repository contains a **GitHub Actions** pipeline for building, scanning, a
 
 - **Concurrency Lock** → Only one production deploy at a time.
 - **Image Existence Check** → Prevents deploying missing images.
-- **Trivy Scanning** → Detects critical/high vulnerabilities.
+- **Trivy Scanning** → Detects critical/high vulnerabilities before staging deploy.
 - **Helm `--atomic`** → Automatic rollback on deployment failure.
----
+- **Manual Approval for Prod** → Human gate before production release.
 
+---
 ## 🛠 Managing Test Namespaces
 
 To remove a Dev namespace after testing:
 
 ```bash
-kubectl delete namespace dev-<branch>
+Run cleanup-stage to delete test namespace
 ```
 ---
 
@@ -108,7 +67,6 @@ Project/
 ├── charts/
 │   ├── templates/
 │   ├── Chart.yaml
-│   ├── values.yaml
 │   ├── values-dev.yaml
 │   ├── values-prod.yaml
 │   └── values-stage.yaml
