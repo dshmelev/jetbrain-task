@@ -19,18 +19,6 @@
   Temporary dev namespaces can be deleted manually by running the **cleanup-stage** workflow.  
   ⚠️ Use with caution: it permanently deletes all resources in that namespace.
 ---
-## 🖥 Manual Production Deployment
-
-1. Go to the **Actions** tab in GitHub.
-2. Select **jetbrain devops task** workflow.
-3. Click **Run workflow** on the `main` branch.
-4. The workflow will:
-  - Verify that the `staging-latest` image exists.
-  - Create a GitHub Issue for manual approval.
-  - Wait for approval before deploying.
-  - Deploy the verified image to **Production** using Helm.
-
----
 
 ## 📦 Image Tag Format
 
@@ -75,6 +63,18 @@ A dedicated workflow **`cleanup-stage.yml`** is provided:
 ⚠️ **Caution:**  
 This action is **destructive**. Running the cleanup workflow with the wrong branch name will permanently delete the corresponding namespace.  
 Always double-check the branch name before running.
+
+---
+## 🖥 Manual Production Deployment
+
+1. Go to the **Actions** tab in GitHub.
+2. Select **jetbrain devops task** workflow.
+3. Click **Run workflow** on the `main` branch.
+4. The workflow will:
+- Verify that the `staging-latest` image exists.
+- Create a GitHub Issue for manual approval.
+- Wait for approval before deploying.
+- Deploy the verified image to **Production** using Helm.
 
 ```
 Project/
