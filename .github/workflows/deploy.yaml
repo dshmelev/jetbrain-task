@@ -148,7 +148,7 @@ jobs:
             echo "Deploying image: ${{ env.IMAGE_REPO }} ${{ env.IMAGE_TAG }} to  ns ${{ env.STAGE_NS }}"
 
             helm upgrade --install my-app ./charts \
-            --atomic \
+            --atomic --wait --timeout 3m0s \
             --namespace ${{ env.STAGE_NS}} \
             --set image.repository=${{ env.IMAGE_REPO }} \
             --set image.tag=${{ env.IMAGE_TAG }} \
