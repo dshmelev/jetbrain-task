@@ -214,7 +214,8 @@ jobs:
              --wait \
              --timeout 5m \
              --set image.tag=staging-latest \
-             -f charts/values-prod.yaml
+             -f charts/values-prod.yaml \
+             --force
            
        - name: Write to job summary
          run: |
