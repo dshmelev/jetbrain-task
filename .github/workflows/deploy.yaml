@@ -99,7 +99,6 @@ jobs:
              helm upgrade --install my-app ./charts \
                --namespace "$NAMESPACE" \
                --create-namespace \
-               --set image.repository=${{ env.IMAGE_REPO }} \
                --set image.tag=${IMAGE_TAG} \
                -f charts/values-dev.yaml
 ############################################### Stage #################################################################################################
@@ -150,7 +149,6 @@ jobs:
             helm upgrade --install my-app ./charts \
             --atomic --wait --timeout 3m0s \
             --namespace ${{ env.STAGE_NS}} \
-            --set image.repository=${{ env.IMAGE_REPO }} \
             --set image.tag=${{ env.IMAGE_TAG }} \
             -f charts/values-stage.yaml
              
