@@ -10,7 +10,11 @@ on:
     types: [ closed ]
     branches:
       - 'stage'
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      staging_tag:
+        description: "Enter the SHA tag to deploy prod"
+        required: true
 
 permissions: #This gives the repo’s GITHUB_TOKEN the rights to push to GHCR from Actions.
   contents: read
@@ -73,7 +77,6 @@ jobs:
           platforms: linux/amd64
           tags: |
             ${{ env.IMAGE_REPO }}:${{ github.sha }}
-            ${{ env.IMAGE_REPO }}:staging-latest
 #################################################### Dev ############################################################################################
 
   deploy-dev:
@@ -189,9 +192,13 @@ jobs:
            username: ${{ github.actor }}
            password: ${{ secrets.GITHUB_TOKEN }}
 
+
+       - name: Set IMAGE_TAG from manual input
+         run: echo "IMAGE_TAG=${{ github.event.inputs.staging_tag }}" >> $GITHUB_ENV
+
        - name: Verify the staging image exists (no rebuild)
          run: |
-           IMAGE=${{ env.IMAGE_REPO }}:staging-latest
+           IMAGE=${{ env.IMAGE_REPO }}:${{ env.IMAGE_TAG }}
            echo "Checking $IMAGE"
            if docker manifest inspect "$IMAGE" >/dev/null 2>&1; then
              echo "Image exists."
@@ -207,12 +214,12 @@ jobs:
            chmod 600 ~/.kube/config
 
        - name: Deploy to Production with Helm
-         run: |          
-           echo "Deploying image: ${{ env.IMAGE_REPO }}:staging-latest to ${{ env.PROD_NS }}"
+         run: |
+           echo "Deploying image: ${{ env.IMAGE_REPO }}:${{ env.IMAGE_TAG }} to ${{ env.PROD_NS }}"
            
            helm upgrade --install my-app ./charts \
              --atomic  --wait --timeout 5m0s \
-             --set image.tag=staging-latest \
+             --set image.tag=${{ env.IMAGE_TAG }} \
              --namespace=production  \
              -f charts/values-prod.yaml \
            
@@ -220,7 +227,7 @@ jobs:
          run: |
             echo "## Deployment Summary" >> $GITHUB_STEP_SUMMARY
             echo "**Environment:** Production" >> $GITHUB_STEP_SUMMARY
-            echo "**Image:** ghcr.io/mina-farajian/jetbrain-task:staging-latest" >> $GITHUB_STEP_SUMMARY
+            echo "**Image:** ${{ env.IMAGE_REPO }}:${{ env.IMAGE_TAG }}" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
             echo "### Helm Status" >> $GITHUB_STEP_SUMMARY
             echo '```' >> $GITHUB_STEP_SUMMARY
