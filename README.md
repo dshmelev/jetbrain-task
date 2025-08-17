@@ -59,3 +59,18 @@ A dedicated workflow **`cleanup-stage.yml`** is provided:
 This action is **destructive**. Running the cleanup workflow with the wrong branch name will permanently delete the corresponding namespace.  
 Always double-check the branch name before running.
 
+
+Project/
+├── .github/
+│   └── workflows/
+│       ├── deploy.yaml
+│       └── cleanup-stage.yml 
+├── app/
+├── charts/
+│   ├── templates/
+│   ├── Chart.yaml
+│   ├── values-dev.yaml
+│   ├── values-prod.yaml
+│   └── values-stage.yaml
+├── Dockerfile
+└── README.md
