@@ -1,64 +1,81 @@
 
-# Jetbrain DevOps Task – CI/CD Pipeline
+# 🚀 JetBrains DevOps Task – CI/CD Pipeline
 
-## ⚙️ How the Workflow Works
+This project demonstrates a **GitHub Actions–based CI/CD pipeline** with automated builds, Kubernetes deployments, and security scanning.  
+The workflow supports **Dev, Staging, and Production** environments.
 
-- **Development Branches (`feature/*`, `dev/*`)**  
-  Every push builds a Docker image with a unique tag (`dev-branchname-sha`) and deploys it to a temporary namespace (`dev-<branch>`).
+---
 
-- **Staging (`stage` branch)**  
-  When code is merged into staging, the pipeline reuses the built image, scans it for vulnerabilities (Trivy), and deploys it to the staging namespace.  
-  The staging image is always tagged as `staging-latest`.
+## ⚙️ Workflow Overview
 
-- **Production (`main` branch)**  
-  Production never builds a new image.  
-  Instead, it reuses the **staging-latest** tag that was already tested in staging, ensuring consistency between environments.  
-  Deployment requires manual approval through GitHub Issues.
+- **Development (`feature/*`, `dev/*`, `dev-*`)**
+  - On every push, a Docker image is built and tagged as:  
+    `dev-<branch>-<sha>`
+  - Deployed into a **dynamic namespace**: `dev-<branch>`.
+  - Each branch gets its own isolated environment.
 
-- **Cleanup Workflow**  
-  Temporary dev namespaces can be deleted manually by running the **cleanup-stage** workflow.  
-  ⚠️ Use with caution: it permanently deletes all resources in that namespace.
+- **Staging (`stage` branch)**
+  - Builds a Docker image tagged with the **commit SHA**.
+  - Runs **Trivy vulnerability scanning** before deployment.
+  - Deploys into the **staging namespace** (`staging`).
+  - Ensures staging always reflects the tested commit.
+
+- **Production (`main` branch, manual trigger)**
+  - **Does not rebuild images.**
+  - Reuses an image from staging by providing its **SHA tag** manually.
+  - Requires **manual approval** via GitHub Issue before deployment.
+  - Deploys into the **production namespace** (`production`).
+  - Ensures production always uses a previously tested staging image.
+
+- **Cleanup Workflow**
+  - Developers can trigger a cleanup workflow (`cleanup-stage.yml`) to delete dev environments.
+  - This prevents unused namespaces from cluttering the cluster.
+
 ---
 
 ## 📦 Image Tag Format
 
-| Environment | Example Tag                                         |
-|-------------|------------------------------------------------------|
-| Dev         | `dev-feature-loginfix-a1b2c3d4`                      |
-| Staging     | `a1b2c3d4e5f6g7h8i9j0`, `staging-latest`             |
-| Production  | `staging-latest` (reuses staging image)              |
+| Environment | Example Tag                          |
+|-------------|--------------------------------------|
+| Dev         | `dev-feature-loginfix-a1b2c3d4`      |
+| Staging     | `ffc82d62b35419bfde99696fc5c8627c8e7f6e48` |
+| Production  | Manually entered staging SHA tag     |
 
 ---
 
 ## 🔒 Required Secrets
 
-| Secret Name               | Purpose                                   |
-|---------------------------|-------------------------------------------|
-| `GITHUB_TOKEN`            | GHCR authentication & GitHub API actions |
-| `KUBECONFIG_CONTENT`      | Base64 kubeconfig for target clusters     |
+| Secret Name          | Purpose                                    |
+|----------------------|--------------------------------------------|
+| `GITHUB_TOKEN`       | Auth for GHCR & GitHub API actions         |
+| `KUBECONFIG_CONTENT` | Base64 kubeconfig for target cluster       |
 
 ---
 
 ## ⚠ Safeguards
 
-- **Concurrency Lock** → Only one production deploy at a time.
-- **Image Existence Check** → Prevents deploying missing images.
-- **Trivy Scanning** → Detects critical/high vulnerabilities before staging deploy.
-- **Helm `--atomic`** → Automatic rollback on deployment failure.
-- **Manual Approval for Prod** → Human gate before production release.
+- **Manual Approval for Production** – human gate before release.
+- **Concurrency Lock** – prevents multiple prod deployments at once.
+- **Image Existence Check** – ensures production reuses a valid staging image.
+- **Trivy Scan** – blocks staging deployments if vulnerabilities are found.
+- **Helm `--atomic`** – ensures rollback on failed deployments.
+
+---
+
+## 🖥 Manual Production Deployment
+
+1. Go to **Actions → jetbrain devops task**.
+2. Select the `main` branch and click **Run workflow**.
+3. Provide the **SHA image tag** of the staging build (from last staging deploy).
+4. A GitHub Issue will be created requesting approval.
+5. Once approved, the workflow deploys that image to production.
 
 ---
 
 ## 🛠 Managing Test Namespaces
 
-Temporary namespaces are created for feature branches during **Dev deployments** (e.g., `dev-feature-loginfix`).  
-To keep the cluster clean, these namespaces should be deleted after testing.
-
-A dedicated workflow **`cleanup-stage.yml`** is provided:
-
-- **Input:** Requires the branch name to clean.
-- **Action:** Deletes the matching `dev-<branch>` namespace if it exists.
-- **Safety:** Skips deletion on `main` and `stage` branches to prevent accidents.
+- Every `feature/*`, `dev/*`, or `dev-*` branch gets a **dedicated namespace** (e.g., `dev-feature-loginfix`).
+- To delete old namespaces, run the **cleanup-stage.yml** workflow manually.
 
 ⚠️ **Caution:**  
 This action is **destructive**. Running the cleanup workflow with the wrong branch name will permanently delete the corresponding namespace.  
@@ -67,14 +84,11 @@ Always double-check the branch name before running.
 ---
 ## 🖥 Manual Production Deployment
 
-1. Go to the **Actions** tab in GitHub.
-2. Select **jetbrain devops task** workflow.
-3. Click **Run workflow** on the `main` branch.
-4. The workflow will:
-- Verify that the `staging-latest` image exists.
-- Create a GitHub Issue for manual approval.
-- Wait for approval before deploying.
-- Deploy the verified image to **Production** using Helm.
+1. Go to **Actions → jetbrain devops task**.
+2. Select the `main` branch and click **Run workflow**.
+3. Provide the **SHA image tag** of the staging build (from last staging deploy).
+4. A GitHub Issue will be created requesting approval.
+5. Once approved, the workflow deploys that image to production.
 
 ---
 ### Overview
