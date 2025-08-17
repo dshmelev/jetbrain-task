@@ -78,7 +78,7 @@ jobs:
 
   deploy-dev:
        needs: build
-       if: startsWith(github.ref, 'refs/heads/feature/') || startsWith(github.ref, 'refs/heads/dev/' || startsWith(github.ref, 'refs/heads/dev-')
+       if: startsWith(github.ref, 'refs/heads/feature/') || startsWith(github.ref, 'refs/heads/dev/') || startsWith(github.ref, 'refs/heads/dev-')
        runs-on: ubuntu-latest
        env:
          IMAGE_TAG: dev-${{ needs.build.outputs.safe_branch }}-${{ github.sha }}
