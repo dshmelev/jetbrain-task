@@ -10,14 +10,10 @@ on:
     types: [ closed ]
     branches:
       - 'stage'
-  workflow_dispatch:
-    inputs:
-      staging_tag:
-        description: "Enter the SHA tag to deploy prod"
-        required: true
+  workflow_dispatch: {}
 
 permissions: #This gives the repo’s GITHUB_TOKEN the rights to push to GHCR from Actions.
-  contents: read
+  contents: write
   packages: write
 
 env:
@@ -156,7 +152,17 @@ jobs:
             --namespace ${{ env.STAGE_NS}} \
             --set image.repository=${{ env.IMAGE_REPO }} \
             --set image.tag=${{ env.IMAGE_TAG }} \
-            -f charts/values-stage.yaml             
+            -f charts/values-stage.yaml
+             
+         - name: Update image tag in values-prod.yaml
+           run: |
+              sed -i "s|tag:.*|tag: \"${{ env.IMAGE_TAG }}\"|" charts/values-prod.yaml
+              git config user.name "github-actions"
+              git config user.email "github-actions@github.com"
+              git add charts/values-prod.yaml
+              git commit -m "Update prod image tag to ${{ env.IMAGE_TAG }}"
+              git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
+              git push    
 
          - name: View last staging tag
            id: set-tag
@@ -202,13 +208,15 @@ jobs:
            username: ${{ github.actor }}
            password: ${{ secrets.GITHUB_TOKEN }}
 
-
-       - name: Set IMAGE_TAG from manual input
-         run: echo "IMAGE_TAG=${{ github.event.inputs.staging_tag }}" >> $GITHUB_ENV
+       - name: Read last staging tag
+         id: read-tag
+         run: |
+           TAG=$(grep 'tag:' charts/values-prod.yaml | head -n1 | awk '{print $2}')
+           echo "staging_tag=$TAG" >> $GITHUB_OUTPUT    
 
        - name: Verify the staging image exists (no rebuild)
          run: |
-           IMAGE=${{ env.IMAGE_REPO }}:${{ env.IMAGE_TAG }}
+           IMAGE=${{ env.IMAGE_REPO }}:${{ steps.read-tag.outputs.staging_tag }}
            echo "Checking $IMAGE"
            if docker manifest inspect "$IMAGE" >/dev/null 2>&1; then
              echo "Image exists."
@@ -225,11 +233,11 @@ jobs:
 
        - name: Deploy to Production with Helm
          run: |
-           echo "Deploying image: ${{ env.IMAGE_REPO }}:${{ env.IMAGE_TAG }} to ${{ env.PROD_NS }}"
+           echo "Deploying image: ${{ env.IMAGE_REPO }}:${{ steps.read-tag.outputs.staging_tag }} to ${{ env.PROD_NS }}"
            
            helm upgrade --install my-app ./charts \
              --atomic  --wait --timeout 5m0s \
-             --set image.tag=${{ env.IMAGE_TAG }} \
+             --set image.tag=${{ steps.read-tag.outputs.staging_tag }} \
              --namespace=production  \
              -f charts/values-prod.yaml \
            
@@ -237,7 +245,7 @@ jobs:
          run: |
             echo "## Deployment Summary" >> $GITHUB_STEP_SUMMARY
             echo "**Environment:** Production" >> $GITHUB_STEP_SUMMARY
-            echo "**Image:** ${{ env.IMAGE_REPO }}:${{ env.IMAGE_TAG }}" >> $GITHUB_STEP_SUMMARY
+            echo "**Image:** ${{ env.IMAGE_REPO }}:${{ steps.read-tag.outputs.staging_tag }}" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
             echo "### Helm Status" >> $GITHUB_STEP_SUMMARY
             echo '```' >> $GITHUB_STEP_SUMMARY
