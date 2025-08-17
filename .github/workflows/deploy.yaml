@@ -167,7 +167,7 @@ jobs:
      runs-on: ubuntu-latest
      permissions:
       issues: write
-#     concurrency: production  # Prevent multiple prod deploys at same time
+     concurrency: production  # Prevent multiple prod deploys at same time
      steps:
 #       - name: Await Manual Approval
 #         uses: trstringer/manual-approval@v1
@@ -213,6 +213,7 @@ jobs:
              --atomic \
              --wait \
              --timeout 5m \
+             -- set namespace=production \
              --set image.tag=staging-latest \
              -f charts/values-prod.yaml \
              --force
