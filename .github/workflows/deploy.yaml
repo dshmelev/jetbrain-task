@@ -158,6 +158,16 @@ jobs:
             --set image.tag=${{ env.IMAGE_TAG }} \
             -f charts/values-stage.yaml             
 
+         - name: View last staging tag
+           id: set-tag
+           run: |
+              echo "tag=${{ env.IMAGE_TAG }}" >> $GITHUB_OUTPUT
+              
+              {
+                echo "### ✅ Staging Deployment Tag"
+                echo ""
+                echo "**Image Tag:** ${{ env.IMAGE_REPO }}:  ${{ env.IMAGE_TAG }}"
+              } >> $GITHUB_STEP_SUMMARY
 
 #         - name: Run smoke tests
 #           run: |
