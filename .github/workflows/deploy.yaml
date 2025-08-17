@@ -211,6 +211,8 @@ jobs:
            
            helm upgrade --install my-app ./charts \
              --atomic \
+             --wait \
+             --timeout 5m \
              --set image.tag=staging-latest \
              -f charts/values-prod.yaml
            
