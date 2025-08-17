@@ -211,7 +211,7 @@ jobs:
            
            helm upgrade --install my-app ./charts \
              --atomic \
-             --set namespace=production \
+             --namespace production --create-namespace \
              --set image.tag=ccf243c622bb4f1d9b8fdd178f4f7b4bd9407e87 \
              -f charts/values-prod.yaml \
            
