@@ -210,11 +210,10 @@ jobs:
            echo "Deploying image: ${{ env.IMAGE_REPO }}:staging-latest to ${{ env.PROD_NS }}"
            
            helm upgrade --install my-app ./charts \
-             --atomic \
-             --wait \
-             --timeout 5m \
+             --atomic  --wait --timeout 6m0s \
              --set image.tag=staging-latest \
-             -f charts/values-prod.yaml
+             --namespace=production  \
+             -f charts/values-prod.yaml \
            
        - name: Write to job summary
          run: |
