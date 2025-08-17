@@ -200,7 +200,6 @@ jobs:
          uses: actions/download-artifact@v4
          with:
            name: production-image-tag
-           path: .
 
        - name: Set production image tag from artifact
          id: set-tag
@@ -209,16 +208,16 @@ jobs:
            echo "Using image tag: $IMAGE_TAG"
            echo "image-tag=$IMAGE_TAG" >> $GITHUB_OUTPUT
 
-#       - name: Verify the staging image exists (no rebuild)
-#         run: |
-#           IMAGE_TAG=$(yq '.image.tag' charts/values-prod.yaml)
-#           IMAGE="${{ env.IMAGE_REPO }}:${IMAGE_TAG}"
-#           echo "Checking $IMAGE"
-#           if docker manifest inspect "$IMAGE" >/dev/null 2>&1; then
-#           echo "Image exists."
-#           else
-#           echo "ERROR: $IMAGE not found. Production must reuse staging image."
-#           fi
+       - name: Verify the staging image exists (no rebuild)
+         run: |
+           IMAGE_TAG=${{ env.IMAGE_REPO }}:${{ steps.set-tag.outputs.image-tag }}
+           IMAGE="${{ env.IMAGE_REPO }}:${IMAGE_TAG}"
+           echo "Checking $IMAGE"
+           if docker manifest inspect "$IMAGE" >/dev/null 2>&1; then
+           echo "Image exists."
+           else
+           echo "ERROR: $IMAGE not found. Production must reuse staging image."
+           fi
 
        - name: Set up Kubeconfig
          run: |
@@ -227,7 +226,7 @@ jobs:
            chmod 600 ~/.kube/config
 
        - name: Deploy to Production with Helm
-         run: |
+         run: |          
            echo "Deploying image: ${{ env.IMAGE_REPO }}:${{ steps.set-tag.outputs.image-tag }} to ${{ env.PROD_NS }}"
            
            helm upgrade --install my-app ./charts \
