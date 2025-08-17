@@ -1,6 +1,24 @@
 
 # Jetbrain DevOps Task – CI/CD Pipeline
 
+## ⚙️ How the Workflow Works
+
+- **Development Branches (`feature/*`, `dev/*`)**  
+  Every push builds a Docker image with a unique tag (`dev-branchname-sha`) and deploys it to a temporary namespace (`dev-<branch>`).
+
+- **Staging (`stage` branch)**  
+  When code is merged into staging, the pipeline reuses the built image, scans it for vulnerabilities (Trivy), and deploys it to the staging namespace.  
+  The staging image is always tagged as `staging-latest`.
+
+- **Production (`main` branch)**  
+  Production never builds a new image.  
+  Instead, it reuses the **staging-latest** tag that was already tested in staging, ensuring consistency between environments.  
+  Deployment requires manual approval through GitHub Issues.
+
+- **Cleanup Workflow**  
+  Temporary dev namespaces can be deleted manually by running the **cleanup-stage** workflow.  
+  ⚠️ Use with caution: it permanently deletes all resources in that namespace.
+---
 ## 🖥 Manual Production Deployment
 
 1. Go to the **Actions** tab in GitHub.
