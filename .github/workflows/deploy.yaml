@@ -235,7 +235,6 @@ jobs:
            
            helm upgrade --install my-app ./charts \
              --atomic  --wait --timeout 5m0s \
-             --set image.tag=${{ steps.read-tag.outputs.staging_tag }} \
              --namespace=production  \
              -f charts/values-prod.yaml \
            
