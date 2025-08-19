@@ -1,5 +1,5 @@
 Deployment:
-replicaCount: 1
+replicaCount: 3
 name: my-nginx-prod
 image:
   repository: ghcr.io/mina-farajian/jetbrain-task
