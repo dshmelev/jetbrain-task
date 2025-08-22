@@ -41,6 +41,12 @@ spec:
           {{- end }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy | default "IfNotPresent" }}
+          env:
+            - name: APP_MESSAGE
+              valueFrom:
+                configMapKeyRef:
+                  key: APP_MESSAGE
+                  name: {{ include "my-python-app.fullname" . }}-config
           ports:
             - name: http
               containerPort: {{ .Values.service.port }}
