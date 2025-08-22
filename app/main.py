@@ -9,7 +9,7 @@ def hello_world():
     return 'Hello, World!'
 
 @app.route('/version')
-def hello_world():
+def version():
     return 'this is version'
 
 if __name__ == '__main__':
