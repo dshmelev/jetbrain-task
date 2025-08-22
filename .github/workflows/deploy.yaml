@@ -17,7 +17,7 @@ permissions: #This gives the repo’s GITHUB_TOKEN the rights to push to GHCR fr
   packages: write
 
 env:
-  IMAGE_REPO: ghcr.io/mina-farajian/jetbrain-task
+  IMAGE_REPO: ghcr.io/dshmelev/jetbrain-task
   STAGE_NS: staging
   PROD_NS: production
 

@@ -2,7 +2,7 @@ Deployment:
 replicaCount: 3
 name: my-nginx-prod
 image:
-  repository: ghcr.io/mina-farajian/jetbrain-task
+  repository: ghcr.io/dshmelev/jetbrain-task
   tag: "593359f8372f27a19d4c739f228db11946ad3d1f"
   pullPolicy: IfNotPresent
 resources:

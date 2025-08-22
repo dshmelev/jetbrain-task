@@ -2,7 +2,7 @@ Deployment:
 replicaCount: 2
 name: my-nginx-stage
 image:
-  repository: ghcr.io/mina-farajian/jetbrain-task
+  repository: ghcr.io/dshmelev/jetbrain-task
   pullPolicy: IfNotPresent
 resources:
    limits:
