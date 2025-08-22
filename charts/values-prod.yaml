@@ -3,7 +3,7 @@ replicaCount: 3
 name: my-nginx-prod
 image:
   repository: ghcr.io/dshmelev/jetbrain-task
-  tag: "0dd7602e6cb28f56bc55454c21bf05c4cb637a09"
+  tag: "cefca5a60ce12329c076f1129af093f07a5ec56f"
   pullPolicy: IfNotPresent
 resources:
    limits:
