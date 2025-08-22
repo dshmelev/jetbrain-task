@@ -185,7 +185,7 @@ jobs:
          uses: trstringer/manual-approval@v1
          with:
            secret: ${{ secrets.GITHUB_TOKEN }}
-           approvers: Mina-Farajian
+           approvers: dshmelev
            minimum-approvals: 1
            issue-title: "Manual Approval Required for Production deploy"
            issue-body: "Please approve or deny the deployment."
